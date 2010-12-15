@@ -36,15 +36,15 @@ class OODoc(object):
         return smgr.createInstanceWithContext( "com.sun.star.frame.DispatchHelper", ctx)
 
     def args(self, *args):
-        uno_struct = (uno.createUnoStruct('com.sun.star.beans.PropertyValue'),
-                      uno.createUnoStruct('com.sun.star.beans.PropertyValue'),
-                      uno.createUnoStruct('com.sun.star.beans.PropertyValue'))
+        uno_struct = []
 
         for i, arg in enumerate(args):
-            uno_struct[i].Name = arg[0]
-            uno_struct[i].Value = arg[1]
+            struct = uno.createUnoStruct('com.sun.star.beans.PropertyValue')
+            struct.Name = arg[0]
+            struct.Value = arg[1]
+            uno_struct.append(struct)
 
-        return uno_struct
+        return tuple(uno_struct)
 
     def dispatch(self, cmd, *args):
         if args:
@@ -77,7 +77,7 @@ class OODoc(object):
     
 class OOSheet(OODoc):
 
-    def __init__(self, selector):
+    def __init__(self, selector = None):
         if not selector:
             return
         
@@ -124,19 +124,6 @@ class OOSheet(OODoc):
     def basedate(self):
         return datetime(1899, 12, 30)
 
-    def focus(self):
-        self.dispatch('.uno:GoToCell', ('ToPoint', self.selector))
-
-    def drag_to(self, destiny):
-
-        if '.' in destiny:
-            sheet_name, destiny = destiny.split('.')
-            assert sheet_name == self.sheet.Name
-            
-        self.focus()
-
-        self.dispatch('.uno:AutoFill', ('EndCell', '%s.%s' % (self.sheet.Name, destiny)))
-
     @property
     def value(self):
         assert self.cell is not None
@@ -180,6 +167,18 @@ class OOSheet(OODoc):
         delta = date - self.basedate
         self.value = delta.days
 
+    def focus(self):
+        self.dispatch('.uno:GoToCell', ('ToPoint', self.selector))
+
+    def drag_to(self, destiny):
+
+        if '.' in destiny:
+            sheet_name, destiny = destiny.split('.')
+            assert sheet_name == self.sheet.Name
+            
+        self.focus()
+        self.dispatch('.uno:AutoFill', ('EndCell', '%s.%s' % (self.sheet.Name, destiny)))
+
     def delete_rows(self):
         self.focus()
         self.dispatch('.uno:DeleteRows')
@@ -206,4 +205,24 @@ class OOSheet(OODoc):
 
     def paste(self):
         self.focus()
-        self.dispatch('.uno:Paste')        
+        self.dispatch('.uno:Paste')
+
+
+    def format_as(self, selector):
+        OOSheet(selector).copy()
+        self.focus()
+        self.dispatch('.uno:InsertContents',
+                      ('Flags', 'T'),
+                      ('FormulaCommand', 0),
+                      ('SkipEmptyCells', False),
+                      ('Transpose', False),
+                      ('AsLink', False),
+                      ('MoveMode', 4),
+                      )
+
+        self.dispatch('.uno:TerminateInplaceActivation')
+        self.dispatch('.uno:Cancel')
+        
+
+
+
