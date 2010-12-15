@@ -6,11 +6,11 @@ This module aims to make it simple to develop OpenOffice.org Spreadsheet scripts
 
 It's goals are to provide:
 
- - A good and intuitive API for most common spreadsheet routines (the design is inspired by JQuery)
+ - A good and intuitive API for most common spreadsheet routines (the design is inspired by JQuery);
 
  - A quick way to test your routines;
 
- - Simple way to embbed the script in a document and edit it later (OO.org does not);
+ - Simple way to embbed the script in a document and edit it later (OO.org does not) - yet TODO
 
 
 =================
@@ -44,11 +44,3 @@ In python shell: (keep the document visible while you do that to see results in 
 
 
 This module is very new, hope to have more docs soon - December 15th, 2010
-
-
-
-
-
-
-
-
