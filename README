@@ -42,5 +42,13 @@ In python shell: (keep the document visible while you do that to see results in 
   >>> S('Sheet2.a1').paste()
   >>> S('a5').format_as('a1') #you need to put some formatting in a1 to make this relevant
 
+  Row and columns insert and delete:
+
+  >>> S('a5').insert_row() # insert one row before 5
+  >>> S('d1').insert_column() # insert one column before d
+  >>> S('a5').delete_rows() # delete row 5
+  >>> S('d1').delete_columns() # delete column d
+  >>> S('a1:10').delete_rows() # delete rows 1 - 10
+
 
 This module is very new, hope to have more docs soon - December 15th, 2010
