@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import uno, re, sys
+import uno, re, sys, os
 from datetime import datetime, timedelta
 
 # http://codesnippets.services.openoffice.org/Office/Office.MessageBoxWithTheUNOBasedToolkit.snip
@@ -223,6 +223,23 @@ class OOSheet(OODoc):
 
         self.dispatch('.uno:TerminateInplaceActivation')
         self.dispatch('.uno:Cancel')
+
+    def undo(self):
+        self.dispatch('.uno:Undo')
+
+    def redo(self):
+        self.dispatch('.uno:Redo')
+
+    def save_as(self, filename):
+        if not filename.startswith('/'):
+            filename = os.path.join(os.environ['PWD'], filename)
+            
+        self.dispatch('.uno:SaveAs', ('URL', 'file://%s' % filename), ('FilterName', 'calc8'))
+        
+    def quit(self):
+        self.dispatch('.uno:Quit')
+
+        
         
 
 
