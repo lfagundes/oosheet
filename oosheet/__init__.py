@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import uno, re
+import uno, re, sys
 from datetime import datetime, timedelta
 
 # http://codesnippets.services.openoffice.org/Office/Office.MessageBoxWithTheUNOBasedToolkit.snip
@@ -12,23 +12,24 @@ class OODoc(object):
 
     @property
     def model(self):
-        try:
-            return XSCRIPTCONTEXT.getDocument()
-        except NameError:
-            localContext = uno.getComponentContext()
+        localContext = uno.getComponentContext()
+        if sys.modules.get('pythonscript'):
+            ctx = localContext
+        else:
             resolver = localContext.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", localContext)
             ctx = resolver.resolve( "uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext" )
-            smgr = ctx.ServiceManager
-            desktop = smgr.createInstanceWithContext( "com.sun.star.frame.Desktop",ctx)
             
-            return desktop.getCurrentComponent()
+        smgr = ctx.ServiceManager
+        desktop = smgr.createInstanceWithContext( "com.sun.star.frame.Desktop",ctx)
+            
+        return desktop.getCurrentComponent()
 
     @property
     def dispatcher(self):
-        try:
-            ctx = XSCRIPTCONTEXT.getComponentContext()
-        except NameError:
-            localContext = uno.getComponentContext()
+        localContext = uno.getComponentContext()
+        if sys.modules.get('pythonscript'):
+            ctx = localContext
+        else:
             resolver = localContext.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", localContext)
             ctx = resolver.resolve( "uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext" )
 
