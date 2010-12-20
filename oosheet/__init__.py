@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import uno, re, sys, os
+import uno, re, sys, os, zipfile
 from datetime import datetime, timedelta
 
 # http://codesnippets.services.openoffice.org/Office/Office.MessageBoxWithTheUNOBasedToolkit.snip
@@ -14,8 +14,10 @@ class OODoc(object):
     def model(self):
         localContext = uno.getComponentContext()
         if sys.modules.get('pythonscript'):
+            # We're inside openoffice macro
             ctx = localContext
         else:
+            # We have to connect by socket
             resolver = localContext.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", localContext)
             ctx = resolver.resolve( "uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext" )
             
@@ -208,6 +210,9 @@ class OOSheet(OODoc):
         self.focus()
         self.dispatch('.uno:Paste')
 
+    def delete(self):
+        self.focus()
+        self.dispatch('.uno:Delete', ('Flags', 'A'))
 
     def format_as(self, selector):
         OOSheet(selector).copy()
@@ -238,6 +243,43 @@ class OOSheet(OODoc):
         
     def quit(self):
         self.dispatch('.uno:Quit')
+
+
+class OOMerger():
+
+    def __init__(self, ods, script):
+        self.ods = zipfile.ZipFile(ods, 'a')
+        self.script = script
+
+        assert os.path.exists(script)
+
+    @property
+    def script_name(self):
+        return self.script.rpartition('/')[2]
+
+    def manifest_add(self, path):
+        manifest = []
+        for line in self.ods.open('META-INF/manifest.xml'):
+            if '</manifest:manifest>' in line:
+                manifest.append(' <manifest:file-entry manifest:media-type="application/binary" manifest:full-path="%s"/>' % path)
+            elif ('full-path:"%s"' % path) in line:
+                return
+            
+            manifest.append(line)
+
+        self.ods.writestr('META-INF/manifest.xml', ''.join(manifest))
+        
+
+    def merge(self):
+        self.ods.write(self.script, 'Scripts/python/%s' % self.script_name)
+        
+        self.manifest_add('Scripts/')
+        self.manifest_add('Scripts/python/')
+        self.manifest_add('Scripts/python/%s' % self.script_name)
+
+        self.ods.close()
+        
+        
 
         
         
