@@ -260,6 +260,17 @@ def test_find_last_column():
     S('b1').find_last_column().value = 100
     assert S('g1').value == 100
 
+def test_find_last_column_works_with_ranges():
+    S('g1').value = 100
+    S('g1').drag_to('g3')
+    S('a1').value = 1
+    S('a1').drag_to('a3')
+    S('a1:3').drag_to('f3')
+    
+    S('b1:3').find_last_column().drag_to('i3')
+
+    assert S('i2').value == 103
+
 def test_find_last_row():
     S('a1').value = 1
     S('a1').drag_to('a10')

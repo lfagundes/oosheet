@@ -94,6 +94,11 @@ class OOSheet(OODoc):
         cells = cells.upper()
 
         if ':' in cells:
+            (start, end) = cells.split(':')
+            if not re.match('^[A-Z]', end):
+                col, row = self._position(start)
+                end = ''.join([self._col_name(col), end])
+            cells = ':'.join([start, end])
             self.range = cells
             self.cell = None
         else:
@@ -102,6 +107,9 @@ class OOSheet(OODoc):
             self.range = None
 
         self.cells = cells
+
+    def __repr__(self):
+        return self.selector
 
     @property
     def selector(self):
@@ -215,7 +223,17 @@ class OOSheet(OODoc):
         self.dispatch('.uno:InsertColumns')
 
     def find_last_column(self):
-        col, row = self._position(self.cells)
+        if ':' not in self.cells:
+            cells = self.cells
+            end_row = None
+        else:
+            (start, end) = self.cells.split(':')
+            start_col, start_row = self._position(start)
+            end_col, end_row = self._position(end)
+            assert start_col == end_col
+            cells = start
+
+        col, row = self._position(cells)
         while True:
             col += 1
             cell = self.sheet.getCellByPosition(col, row)
@@ -224,6 +242,8 @@ class OOSheet(OODoc):
                 break
             
         cells = '%s%d' % (self._col_name(col), row+1)
+        if end_row is not None:
+            cells += ':%d' % (end_row+1)
         selector = '.'.join([self.sheet.Name, cells])
         return OOSheet(selector)
 
