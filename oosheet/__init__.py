@@ -101,19 +101,22 @@ class OOSheet(OODoc):
             self.cell = self.sheet.getCellByPosition(col, row)
             self.range = None
 
-        self.selector = '.'.join([self.sheet.Name, cells])
+        self.cells = cells
 
+    @property
+    def selector(self):
+        return '.'.join([self.sheet.Name, self.cells])
+    
     def _position(self, descriptor):
         col = re.findall('^([A-Z]+)', descriptor)[0]
         row = descriptor[len(col):]
             
-        col = self.col_index(col)
+        col = self._col_index(col)
         row = int(row) - 1
 
         return col, row
-        
 
-    def col_index(self, name):
+    def _col_index(self, name):
         letters = [ l for l in name ]
         letters.reverse()
         index = 0
@@ -122,6 +125,19 @@ class OOSheet(OODoc):
             index += (1 + ord(letter) - ord('A')) * pow(ord('Z') - ord('A') + 1, power)
             power += 1
         return index - 1
+
+    def _col_name(self, index):
+        name = []
+        letters = [ chr(ord('A')+i) for i in range(26) ]
+        
+        while index > 0:
+            i = index % 26
+            index = int(index/26) - 1
+            name.append(letters[i])
+
+        if index == 0:
+            name.append('A')
+        return ''.join(name)            
 
     @property
     def basedate(self):
@@ -197,6 +213,32 @@ class OOSheet(OODoc):
     def insert_column(self):
         self.focus()
         self.dispatch('.uno:InsertColumns')
+
+    def find_last_column(self):
+        col, row = self._position(self.cells)
+        while True:
+            col += 1
+            cell = self.sheet.getCellByPosition(col, row)
+            if cell.getValue() == 0 and cell.getString() == '' and cell.getFormula() == '':
+                col -= 1
+                break
+            
+        cells = '%s%d' % (self._col_name(col), row+1)
+        selector = '.'.join([self.sheet.Name, cells])
+        return OOSheet(selector)
+
+    def find_last_row(self):
+        col, row = self._position(self.cells)
+        while True:
+            row += 1
+            cell = self.sheet.getCellByPosition(col, row)
+            if cell.getValue() == 0 and cell.getString() == '' and cell.getFormula() == '':
+                row -= 1
+                break
+
+        cells = '%s%d' % (self._col_name(col), row+1)
+        selector = '.'.join([self.sheet.Name, cells])
+        return OOSheet(selector)
 
     def copy(self):
         self.focus()
@@ -278,6 +320,9 @@ class OOMerger():
         self.manifest_add('Scripts/python/%s' % self.script_name)
 
         self.ods.close()
+
+def merge():
+    print "Hello"
         
         
 

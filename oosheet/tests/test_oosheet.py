@@ -7,6 +7,15 @@ import unittest
 
 from oosheet import OOSheet as S, OOMerger
 
+def dev(func):
+    func.dev = True
+    return func
+
+try:
+    dev_only = sys.argv[1] == 'dev'
+except (IndexError, AttributeError):
+    dev_only = False    
+
 class OOCalcLauncher(object):
 
     TIMEOUT = 10
@@ -55,7 +64,18 @@ class OOCalcLauncher(object):
 def clear():
     S('a1:g10').delete()
     S('Sheet2.a1:g10').delete()
-        
+
+def test_internal_routines():
+    assert S()._col_index('A') == 0
+    assert S()._col_index('B') == 1
+    assert S()._col_index('Z') == 25
+    assert S()._col_index('AA') == 26
+
+    assert S()._col_name(0) == 'A'
+    assert S()._col_name(1) == 'B'
+    assert S()._col_name(25) == 'Z'
+    assert S()._col_name(26) == 'AA'
+
 def test_value():
     S('a1').value = 10
 
@@ -233,6 +253,19 @@ def test_save_as():
     assert os.path.exists(filename)
     os.remove(filename)
 
+def test_find_last_column():
+    S('a1').value = 1
+    S('a1').drag_to('g1')
+
+    S('b1').find_last_column().value = 100
+    assert S('g1').value == 100
+
+def test_find_last_row():
+    S('a1').value = 1
+    S('a1').drag_to('a10')
+
+    S('a2').find_last_row().value = 100
+    assert S('a10').value == 100
 
 def tests():
     tests = []
@@ -244,6 +277,14 @@ def tests():
             
 def run_tests(event = None):
     for i, test in enumerate(tests()):
+        try:
+            dev = test.dev
+        except AttributeError:
+            dev = False
+
+        if dev_only and not dev:
+            continue
+            
         if event:
             S('Tests.b%d' % (i+10)).string = test.__name__
         else:
