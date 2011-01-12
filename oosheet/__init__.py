@@ -248,7 +248,17 @@ class OOSheet(OODoc):
         return OOSheet(selector)
 
     def find_last_row(self):
-        col, row = self._position(self.cells)
+        if ':' not in self.cells:
+            cells = self.cells
+            end_col = None
+        else:
+            (start, end) = self.cells.split(':')
+            start_col, start_row = self._position(start)
+            end_col, end_row = self._position(end)
+            assert start_row == end_row
+            cells = start
+
+        col, row = self._position(cells)
         while True:
             row += 1
             cell = self.sheet.getCellByPosition(col, row)
@@ -257,6 +267,8 @@ class OOSheet(OODoc):
                 break
 
         cells = '%s%d' % (self._col_name(col), row+1)
+        if end_col is not None:
+            cells += ':%s%d' % (self._col_name(end_col), row+1)
         selector = '.'.join([self.sheet.Name, cells])
         return OOSheet(selector)
 

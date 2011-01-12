@@ -62,7 +62,7 @@ class OOCalcLauncher(object):
 
 
 def clear():
-    S('a1:g10').delete()
+    S('a1:z100').delete()
     S('Sheet2.a1:g10').delete()
 
 def test_internal_routines():
@@ -278,6 +278,16 @@ def test_find_last_row():
     S('a2').find_last_row().value = 100
     assert S('a10').value == 100
 
+def test_find_last_row_works_with_ranges():
+    S('a10').value = 100
+    S('a10').drag_to('c10')
+    S('a1').value = 1
+    S('a1').drag_to('c1')
+    S('a1:c1').drag_to('c9')
+
+    S('a2:c2').find_last_row().drag_to('c12')
+    assert S('b12').value == 103
+
 def tests():
     tests = []
     for name, method in globals().items():
@@ -311,7 +321,7 @@ def run_tests(event = None):
             if event:
                 S('Tests.d%d' % (i+10)).string = e
             else:
-                print e
+                print type(e).__name__
 
     if event:
         S('Tests.a1').focus()
