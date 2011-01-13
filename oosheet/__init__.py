@@ -108,7 +108,11 @@ class OOSheet(OODoc):
             self.start_row, self.end_row = row, row
             self.cell = self.sheet.getCellByPosition(col, row)
 
-        self.selector = '.'.join([self.sheet.Name, cells])
+    @property
+    def selector(self):
+        start = '%s%d' % (self._col_name(self.start_col), self.start_row + 1)
+        end = '%s%d' % (self._col_name(self.end_col), self.end_row + 1)
+        return '%s.%s:%s' % (self.sheet.Name, start, end)
 
     def __repr__(self):
         return self.selector
@@ -159,6 +163,10 @@ class OOSheet(OODoc):
         assert self.cell is not None
         self.cell.setValue(value)
 
+    def set_value(self, value):
+        self.value = value
+        return self
+
     @property
     def formula(self):
         assert self.cell is not None
@@ -171,6 +179,10 @@ class OOSheet(OODoc):
             formula = '=%s' % formula
         self.cell.setFormula(formula)
 
+    def set_formula(self, formula):
+        self.formula = formula
+        return self
+
     @property
     def string(self):
         assert self.cell is not None
@@ -180,6 +192,10 @@ class OOSheet(OODoc):
     def string(self, string):
         assert self.cell is not None
         self.cell.setString(string)
+
+    def set_string(self, string):
+        self.string = string
+        return self
 
     @property
     def date(self):
@@ -192,6 +208,10 @@ class OOSheet(OODoc):
         delta = date - self.basedate
         self.value = delta.days
 
+    def set_date(self, date):
+        self.date = date
+        return self
+
     def focus(self):
         self.dispatch('.uno:GoToCell', ('ToPoint', self.selector))
 
@@ -203,6 +223,17 @@ class OOSheet(OODoc):
             
         self.focus()
         self.dispatch('.uno:AutoFill', ('EndCell', '%s.%s' % (self.sheet.Name, destiny)))
+
+        if '.' not in destiny:
+            destiny = '.'.join([self.sheet.Name, destiny])
+
+        destiny = OOSheet(destiny)
+        self.start_col = min(self.start_col, destiny.start_col)
+        self.start_row = min(self.start_row, destiny.start_row)
+        self.end_col = max(self.end_col, destiny.end_col)
+        self.end_row = max(self.end_row, destiny.end_row)
+
+        return self
 
     def delete_rows(self):
         self.focus()

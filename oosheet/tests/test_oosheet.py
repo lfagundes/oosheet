@@ -11,10 +11,14 @@ def dev(func):
     func.dev = True
     return func
 
-try:
-    dev_only = sys.argv[1] == 'dev'
-except (IndexError, AttributeError):
-    dev_only = False    
+def getarg(argname):
+    try:
+        return ('--%s' % argname) in sys.argv
+    except AttributeError:
+        return False
+    
+dev_only = getarg('dev')
+stop_on_error = getarg('stop')
 
 class OOCalcLauncher(object):
 
@@ -108,6 +112,25 @@ def test_date():
     assert S('a1').date == datetime(2010, 12, 17)
     S('a1').date += timedelta(5)
     assert S('a1').date == datetime(2010, 12, 22)
+
+def test_drag_calls_can_be_cascaded():
+    S('a1').value = 1
+    S('a1').drag_to('a5').drag_to('c5')
+    assert S('c5').value == 7
+
+def test_cell_contents_can_be_set_by_methods_which_can_be_cascaded():
+    S('a1').set_value(1).drag_to('a5')
+    assert S('a5').value == 5
+    
+    S('a1').set_string('hello').drag_to('a5')
+    assert S('a5').string == 'hello'
+
+    S('a1').value = 1
+    S('a2').set_formula('=a1*2').drag_to('a5')
+    assert S('a5').value == 16
+
+    S('a1').set_date(datetime(2011, 1, 13)).drag_to('a5')
+    assert S('a5').date == datetime(2011, 1, 17)
 
 def test_drag_to():
     S('a1').value = 10
@@ -254,69 +277,52 @@ def test_save_as():
     os.remove(filename)
 
 def test_find_last_column():
-    S('a1').value = 1
-    S('a1').drag_to('g1')
+    S('a1').set_value(1).drag_to('g1')
 
     S('b1').find_last_column().value = 100
     assert S('g1').value == 100
 
 def test_find_last_column_works_with_ranges():
-    S('g1').value = 100
-    S('g1').drag_to('g3')
-    S('a1').value = 1
-    S('a1').drag_to('a3')
-    S('a1:3').drag_to('f3')
+    S('g1').set_value(100).drag_to('g3')
+    S('a1').set_value(1).drag_to('a3').drag_to('f3')
     
     S('b1:3').find_last_column().drag_to('i3')
-
     assert S('i2').value == 103
 
 def test_find_last_column_may_consider_specific_row():
-    S('a1').value = 1
-    S('a1').drag_to('a5')
-    S('a1:5').drag_to('g5')
+    S('a1').set_value(1).drag_to('a5').drag_to('g5')
     S('g3').delete()
-    S('f1').value = 100
-    S('f1').drag_to('f5')
+    S('f1').set_value(100).drag_to('f5')
 
     S('a1:5').find_last_column(3).drag_to('g5')
-
     assert S('g1').value == 101
     assert S('g3').value == 103
     assert S('g5').value == 105
     
 
 def test_find_last_row():
-    S('a1').value = 1
-    S('a1').drag_to('a10')
+    S('a1').set_value(1).drag_to('a10')
 
     S('a2').find_last_row().value = 100
     assert S('a10').value == 100
 
 def test_find_last_row_works_with_ranges():
-    S('a10').value = 100
-    S('a10').drag_to('c10')
-    S('a1').value = 1
-    S('a1').drag_to('c1')
-    S('a1:c1').drag_to('c9')
+    S('a10').set_value(100).drag_to('c10')
+    S('a1').set_value(1).drag_to('c1').drag_to('c9')
 
     S('a2:c2').find_last_row().drag_to('c12')
     assert S('b12').value == 103
 
 def test_find_last_row_may_consider_specific_column():
-    S('a1').value = 1
-    S('a1').drag_to('e1')
-    S('a1:e1').drag_to('e5')
+    S('a1').set_value(1).drag_to('e1').drag_to('e5')
     S('c5').delete()
-    S('a4').value = 100
-    S('a4').drag_to('e4')
+    S('a4').set_value(100).drag_to('e4')
 
     S('a1:e1').find_last_row('c').drag_to('e6')
-
     assert S('a6').value == 102
     assert S('c6').value == 104
     assert S('e6').value == 106
-    
+
 
 def tests():
     tests = []
@@ -327,6 +333,7 @@ def tests():
     return tests
             
 def run_tests(event = None):
+    ok = True
     for i, test in enumerate(tests()):
         try:
             dev = test.dev
@@ -340,39 +347,47 @@ def run_tests(event = None):
             S('Tests.b%d' % (i+10)).string = test.__name__
         else:
             sys.stdout.write('%s... ' % test.__name__)
-        try:
-            clear()
+
+        clear()
+        if stop_on_error:
             test.__call__()
-            if event:
-                S('Tests.c%d' % (i+10)).string = 'OK'
-            else:
-                print 'OK'
-        except Exception, e:
-            if event:
-                S('Tests.d%d' % (i+10)).string = e
-            else:
-                print type(e).__name__
+            print 'OK'
+        else:
+            try:
+                if event:
+                    S('Tests.c%d' % (i+10)).string = 'OK'
+                else:
+                    print 'OK'
+            except Exception, e:
+                ok = False
+                if event:
+                    S('Tests.d%d' % (i+10)).string = e
+                else:
+                    print '%s: %s' % (type(e).__name__, e)
 
     if event:
         S('Tests.a1').focus()
+
+    return ok
             
             
 if __name__ == '__main__':
     calc = OOCalcLauncher()
     try:
-        run_tests()
+        result = run_tests()
     finally:
         calc.quit()
 
-    testmodel = os.path.join(os.path.dirname(__file__), 'testing_sheet.ods')
-    testsheet = os.path.join(os.path.dirname(__file__), 'test.ods')
+    if result:
+        testmodel = os.path.join(os.path.dirname(__file__), 'testing_sheet.ods')
+        testsheet = os.path.join(os.path.dirname(__file__), 'test.ods')
 
-    shutil.copy(testmodel, testsheet)
+        shutil.copy(testmodel, testsheet)
 
-    OOMerger(testsheet, __file__).merge()
+        OOMerger(testsheet, __file__).merge()
 
-    time.sleep(1)
-    calc = OOCalcLauncher(testsheet)
+        time.sleep(1)
+        calc = OOCalcLauncher(testsheet)
     
 
     
