@@ -100,19 +100,22 @@ class OOSheet(OODoc):
                 end = ''.join([self._col_name(col), end])
             self.start_col, self.start_row = self._position(start)
             self.end_col, self.end_row = self._position(end)
-            cells = ':'.join([start, end])
-            self.cell = None
         else:
             col, row = self._position(cells)
             self.start_col, self.end_col = col, col
             self.start_row, self.end_row = row, row
-            self.cell = self.sheet.getCellByPosition(col, row)
 
     @property
     def selector(self):
         start = '%s%d' % (self._col_name(self.start_col), self.start_row + 1)
         end = '%s%d' % (self._col_name(self.end_col), self.end_row + 1)
         return '%s.%s:%s' % (self.sheet.Name, start, end)
+
+    @property
+    def cell(self):
+        assert self.start_col == self.end_col
+        assert self.start_row == self.end_row
+        return self.sheet.getCellByPosition(self.start_col, self.start_row)
 
     def __repr__(self):
         return self.selector
@@ -327,14 +330,17 @@ class OOSheet(OODoc):
     def copy(self):
         self.focus()
         self.dispatch('.uno:Copy')
+        return self
 
     def cut(self):
         self.focus()
         self.dispatch('.uno:Cut')
+        return self
 
     def paste(self):
         self.focus()
         self.dispatch('.uno:Paste')
+        return self
 
     def delete(self):
         self.focus()

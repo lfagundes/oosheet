@@ -245,7 +245,7 @@ def test_delete_columns():
 
     assert S('a5').value == 2
 
-def test_copy_and_paste():
+def test_copy_cut_and_paste():
     S('a1').value = 4
     S('a1').copy()
     S('b2').paste()
@@ -258,6 +258,13 @@ def test_copy_and_paste():
 
     assert S('a1').value == 0
     assert S('c1').value == 4
+
+def test_copy_cut_and_paste_can_be_cascaded():
+    S('a1').set_value(12).copy().set_value(15).shift_right().paste().shift_down().set_value(18).cut().shift_left().paste()
+    assert S('a1').value == 15
+    assert S('b1').value == 12
+    assert S('b2').value == 0
+    assert S('a2').value == 18
 
 def test_delete():
     S('a1').value = 10
@@ -380,6 +387,10 @@ def test_shift_up():
 
     S('e6:g6').shift_up(2).drag_to('g3')
     assert S('f3').value == 106
+
+def test_shifting_works_with_cell_contents():
+    S('a1').set_value(10).shift_right().set_value(12).shift_down().set_value(15).shift_left().set_value(17)
+    assert S('b1').value == 17
     
 def tests():
     tests = []
