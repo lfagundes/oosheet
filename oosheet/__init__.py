@@ -255,6 +255,28 @@ class OOSheet(OODoc):
         self.end_col += 1
         return self
 
+    def shift_right(self, num = 1):
+        self.start_col += num
+        self.end_col += num
+        return self
+    
+    def shift_left(self, num = 1):
+        self.start_col -= num
+        self.end_col -= num
+        assert self.start_col >= 0
+        return self
+
+    def shift_down(self, num = 1):
+        self.start_row += num
+        self.end_row += num
+        return self
+    
+    def shift_up(self, num = 1):
+        self.start_row -= num
+        self.end_row -= num
+        assert self.start_row >= 0
+        return self
+    
     def find_last_column(self, row = None):
         assert self.start_col == self.end_col
 

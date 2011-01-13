@@ -341,7 +341,46 @@ def test_find_last_row_may_consider_specific_column():
     assert S('c6').value == 104
     assert S('e6').value == 106
 
+def test_shift_right():
+    S('a1').set_value(1).drag_to('a10').drag_to('f10')
+    S('c1').set_value(100).drag_to('c10')
 
+    S('b1:b5').shift_right().drag_to('d5')
+    assert S('d3').value == 103
+
+    S('a6:a10').shift_right(2).drag_to('d10')
+    assert S('d7').value == 107
+
+def test_shift_left():
+    S('a1').set_value(1).drag_to('a10').drag_to('f10')
+    S('c1').set_value(102).drag_to('c10')
+
+    S('d1:d5').shift_left().drag_to('b5')
+    assert S('b3').value == 103
+
+    S('e6:e10').shift_left(2).drag_to('b10')
+    assert S('b7').value == 107
+
+def test_shift_down():
+    S('a1').set_value(1).drag_to('a10').drag_to('g10')
+    S('a4').set_value(100).drag_to('g4')
+
+    S('a3:d3').shift_down().drag_to('d5')
+    assert S('c5').value == 103
+
+    S('e2:g2').shift_down(2).drag_to('g5')
+    assert S('f5').value == 106
+
+def test_shift_up():
+    S('a1').set_value(1).drag_to('a10').drag_to('g10')
+    S('a4').set_value(102).drag_to('g4')
+
+    S('a5:d5').shift_up().drag_to('d3')
+    assert S('c3').value == 103
+
+    S('e6:g6').shift_up(2).drag_to('g3')
+    assert S('f3').value == 106
+    
 def tests():
     tests = []
     for name, method in globals().items():
@@ -394,6 +433,7 @@ if __name__ == '__main__':
     try:
         result = run_tests()
     finally:
+        time.sleep(0.5)
         calc.quit()
 
     if result:
