@@ -1,73 +1,24 @@
-#!/usr/bin/python
+# -*- coding: utf-8 -*-
 
-import subprocess, os, time, random, types, shutil, sys
-from datetime import datetime, timedelta
+"""
+Each test must start with test_
 
-import unittest
+clear() is called between each test
 
-from oosheet import OOSheet as S, OOMerger
+Following parameters can be passed to run_tests.py:
 
-def dev(func):
-    func.dev = True
-    return func
+  --dev    Only tests with @dev decorator will be executed
+  --stop   Errors are raised
 
-def getarg(argname):
-    try:
-        return ('--%s' % argname) in sys.argv
-    except AttributeError:
-        return False
-    
-dev_only = getarg('dev')
-stop_on_error = getarg('stop')
+If no errors are encountered, all tests will be merged to a test document to be
+run as macro.
 
-class OOCalcLauncher(object):
-
-    TIMEOUT = 10
-
-    def __init__(self, path = None):
-        assert not self.running
-
-        if path is None:
-            os.system('oocalc -accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager"')
-        else:
-            os.system('oocalc %s' % path)
-                      
-        now = time.time()
-        while time.time() < now + self.TIMEOUT:
-            try:
-                S().model
-                return
-            except Exception:
-                time.sleep(0.1)
-
-    def quit(self):
-        filename = '/tmp/%s.ods' % ''.join([ random.choice('abcdefghijklmnopqrstuvwxyz') for i in range(32) ])
-        S().save_as(filename) #avoid the saving question
-        S().quit()
-        os.remove(filename)
-        
-    @property
-    def pid(self):
-        sub = subprocess.Popen('ps aux'.split(), stdout=subprocess.PIPE)
-        sub.wait()
-        processes = [ line for line in sub.stdout if 'soffice' in line ]
-        try:
-            return int(processes[0].split()[1])
-        except IndexError:
-            return None
-        
-    @property
-    def running(self):
-        if self.pid is None:
-            return False
-
-        
-        return self.pid is not None
-
+"""
 
 def clear():
     S('a1:z100').delete()
     S('Sheet2.a1:g10').delete()
+
 
 def test_internal_routines():
     assert S()._col_index('A') == 0
@@ -391,77 +342,3 @@ def test_shift_up():
 def test_shifting_works_with_cell_contents():
     S('a1').set_value(10).shift_right().set_value(12).shift_down().set_value(15).shift_left().set_value(17)
     assert S('b1').value == 17
-    
-def tests():
-    tests = []
-    for name, method in globals().items():
-        if type(method) is types.FunctionType and name.startswith('test_'):
-            tests.append(method)
-
-    return tests
-            
-def run_tests(event = None):
-    ok = True
-    for i, test in enumerate(tests()):
-        try:
-            dev = test.dev
-        except AttributeError:
-            dev = False
-
-        if dev_only and not dev:
-            continue
-            
-        if event:
-            S('Tests.b%d' % (i+10)).string = test.__name__
-        else:
-            sys.stdout.write('%s... ' % test.__name__)
-
-        clear()
-        if stop_on_error:
-            test.__call__()
-            print 'OK'
-        else:
-            try:
-                if event:
-                    S('Tests.c%d' % (i+10)).string = 'OK'
-                else:
-                    print 'OK'
-            except Exception, e:
-                ok = False
-                if event:
-                    S('Tests.d%d' % (i+10)).string = e
-                else:
-                    print '%s: %s' % (type(e).__name__, e)
-
-    if event:
-        S('Tests.a1').focus()
-
-    return ok
-            
-            
-if __name__ == '__main__':
-    calc = OOCalcLauncher()
-    try:
-        result = run_tests()
-    finally:
-        time.sleep(0.5)
-        calc.quit()
-
-    if result:
-        testmodel = os.path.join(os.path.dirname(__file__), 'testing_sheet.ods')
-        testsheet = os.path.join(os.path.dirname(__file__), 'test.ods')
-
-        shutil.copy(testmodel, testsheet)
-
-        OOMerger(testsheet, __file__).merge()
-
-        time.sleep(1)
-        calc = OOCalcLauncher(testsheet)
-    
-
-    
-    
-    
-
-
-
