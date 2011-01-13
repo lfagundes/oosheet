@@ -220,10 +220,17 @@ class OOSheet(OODoc):
         self.focus()
         self.dispatch('.uno:InsertColumns')
 
-    def find_last_column(self):
+    def find_last_column(self, row = None):
         assert self.start_col == self.end_col
+
+        col = self.start_col
+        if row is None:
+            row = self.start_row
+        else:
+            row -= 1
+            
+        assert row >= self.start_row and row <= self.end_row
         
-        col, row = self.start_col, self.start_row
         while True:
             col += 1
             cell = self.sheet.getCellByPosition(col, row)
@@ -231,7 +238,7 @@ class OOSheet(OODoc):
                 col -= 1
                 break
             
-        cells = '%s%d' % (self._col_name(col), row+1)
+        cells = '%s%d' % (self._col_name(col), self.start_row+1)
         if self.end_row != self.start_row:
             cells += ':%d' % (self.end_row+1)
         selector = '.'.join([self.sheet.Name, cells])

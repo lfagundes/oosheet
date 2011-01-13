@@ -252,14 +252,14 @@ def test_save_as():
     S().save_as(filename)
     assert os.path.exists(filename)
     os.remove(filename)
-
+@dev
 def test_find_last_column():
     S('a1').value = 1
     S('a1').drag_to('g1')
 
     S('b1').find_last_column().value = 100
     assert S('g1').value == 100
-
+@dev
 def test_find_last_column_works_with_ranges():
     S('g1').value = 100
     S('g1').drag_to('g3')
@@ -270,6 +270,21 @@ def test_find_last_column_works_with_ranges():
     S('b1:3').find_last_column().drag_to('i3')
 
     assert S('i2').value == 103
+@dev
+def test_find_last_column_may_consider_specific_row():
+    S('a1').value = 1
+    S('a1').drag_to('a5')
+    S('a1:5').drag_to('g5')
+    S('g3').delete()
+    S('f1').value = 100
+    S('f1').drag_to('f5')
+
+    S('a1:5').find_last_column(3).drag_to('g5')
+
+    assert S('g1').value == 101
+    assert S('g3').value == 103
+    assert S('g5').value == 105
+    
 
 def test_find_last_row():
     S('a1').value = 1
