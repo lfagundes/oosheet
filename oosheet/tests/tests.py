@@ -20,7 +20,7 @@ def clear():
     S('Sheet2.a1:g10').delete()
 
 
-def test_internal_routines():
+def test_column_name_vs_index_conversion():
     assert S()._col_index('A') == 0
     assert S()._col_index('B') == 1
     assert S()._col_index('Z') == 25
