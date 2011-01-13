@@ -246,10 +246,14 @@ class OOSheet(OODoc):
     def insert_row(self):
         self.focus()
         self.dispatch('.uno:InsertRows')
+        self.end_row += 1
+        return self
 
     def insert_column(self):
         self.focus()
         self.dispatch('.uno:InsertColumns')
+        self.end_col += 1
+        return self
 
     def find_last_column(self, row = None):
         assert self.start_col == self.end_col
