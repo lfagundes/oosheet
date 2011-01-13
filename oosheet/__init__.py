@@ -98,23 +98,21 @@ class OOSheet(OODoc):
             if not re.match('^[A-Z]', end):
                 col, row = self._position(start)
                 end = ''.join([self._col_name(col), end])
+            self.start_col, self.start_row = self._position(start)
+            self.end_col, self.end_row = self._position(end)
             cells = ':'.join([start, end])
-            self.range = cells
             self.cell = None
         else:
             col, row = self._position(cells)
+            self.start_col, self.end_col = col, col
+            self.start_row, self.end_row = row, row
             self.cell = self.sheet.getCellByPosition(col, row)
-            self.range = None
 
-        self.cells = cells
+        self.selector = '.'.join([self.sheet.Name, cells])
 
     def __repr__(self):
         return self.selector
 
-    @property
-    def selector(self):
-        return '.'.join([self.sheet.Name, self.cells])
-    
     def _position(self, descriptor):
         col = re.findall('^([A-Z]+)', descriptor)[0]
         row = descriptor[len(col):]
@@ -223,17 +221,9 @@ class OOSheet(OODoc):
         self.dispatch('.uno:InsertColumns')
 
     def find_last_column(self):
-        if ':' not in self.cells:
-            cells = self.cells
-            end_row = None
-        else:
-            (start, end) = self.cells.split(':')
-            start_col, start_row = self._position(start)
-            end_col, end_row = self._position(end)
-            assert start_col == end_col
-            cells = start
-
-        col, row = self._position(cells)
+        assert self.start_col == self.end_col
+        
+        col, row = self.start_col, self.start_row
         while True:
             col += 1
             cell = self.sheet.getCellByPosition(col, row)
@@ -242,23 +232,15 @@ class OOSheet(OODoc):
                 break
             
         cells = '%s%d' % (self._col_name(col), row+1)
-        if end_row is not None:
-            cells += ':%d' % (end_row+1)
+        if self.end_row != self.start_row:
+            cells += ':%d' % (self.end_row+1)
         selector = '.'.join([self.sheet.Name, cells])
         return OOSheet(selector)
 
     def find_last_row(self):
-        if ':' not in self.cells:
-            cells = self.cells
-            end_col = None
-        else:
-            (start, end) = self.cells.split(':')
-            start_col, start_row = self._position(start)
-            end_col, end_row = self._position(end)
-            assert start_row == end_row
-            cells = start
+        assert self.start_row == self.end_row
 
-        col, row = self._position(cells)
+        col, row = self.start_col, self.start_row
         while True:
             row += 1
             cell = self.sheet.getCellByPosition(col, row)
@@ -267,8 +249,8 @@ class OOSheet(OODoc):
                 break
 
         cells = '%s%d' % (self._col_name(col), row+1)
-        if end_col is not None:
-            cells += ':%s%d' % (self._col_name(end_col), row+1)
+        if self.end_col != self.start_col:
+            cells += ':%s%d' % (self._col_name(self.end_col), row+1)
         selector = '.'.join([self.sheet.Name, cells])
         return OOSheet(selector)
 
