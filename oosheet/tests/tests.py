@@ -19,17 +19,19 @@ def clear():
     S('a1:z100').delete()
     S('Sheet2.a1:g10').delete()
 
-
+@dev
 def test_column_name_vs_index_conversion():
     assert S()._col_index('A') == 0
     assert S()._col_index('B') == 1
     assert S()._col_index('Z') == 25
     assert S()._col_index('AA') == 26
+    assert S()._col_index('AF') == 31
 
     assert S()._col_name(0) == 'A'
     assert S()._col_name(1) == 'B'
     assert S()._col_name(25) == 'Z'
     assert S()._col_name(26) == 'AA'
+    assert S()._col_name(31) == 'AF'
 
 def test_value():
     S('a1').value = 10

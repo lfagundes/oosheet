@@ -150,6 +150,8 @@ class OOSheet(OODoc):
 
         if index == 0:
             name.append('A')
+
+        name.reverse()
         return ''.join(name)            
 
     @property
