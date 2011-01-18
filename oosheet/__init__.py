@@ -414,7 +414,13 @@ class OOMerger():
         self.ods.close()
 
 def merge():
-    print "Hello"
+    """
+    This method is intended to be used to merge ods documents with python scripts from
+    command line. setup.py references this routine in entry_points.
+    
+    Current status is that a way to pass command line arguments is missing. 
+    """
+    pass
         
         
 

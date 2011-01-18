@@ -9,6 +9,11 @@ setup(name = 'oosheet',
       author_email = "lhfagundes@hacklab.com.br",
       license = "The MIT License",
       packages = find_packages(),
+      entry_points = {
+          'console_scripts': [
+              'oosheet-merge = oosheet:merge',
+              ]
+          },
       install_requires = ['uno'],
 #      url = 'http://oosheet.hacklab.com.br/',
       classifiers = [
