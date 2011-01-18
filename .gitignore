@@ -1,0 +1,7 @@
+*.pyc
+*~
+b/
+build/
+dist/
+oosheet.egg-info/
+oosheet/tests/test.ods
