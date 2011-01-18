@@ -414,13 +414,30 @@ class OOMerger():
         self.ods.close()
 
 def merge():
-    """
-    This method is intended to be used to merge ods documents with python scripts from
-    command line. setup.py references this routine in entry_points.
+    try:
+        document = sys.argv[1]
+        script = sys.argv[2]
+    except IndexError:
+        print_help()
+
+    if not os.path.exists(document):
+        sys.stderr.write("%s not found" % document)
+        print_help()
+
+    if not os.path.exists(script):
+        sys.stderr.write("%s not found" % script)
+        print_help()
+
+    OOMerger(document, script).merge()
+
+def print_help():
+    script_name = sys.argv[0].split('/')[-1]
+    print "Usage: %s document.ods script.py" % script_name
+    sys.exit(1)
+
     
-    Current status is that a way to pass command line arguments is missing. 
-    """
-    pass
+
+
         
         
 

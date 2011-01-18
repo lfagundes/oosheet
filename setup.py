@@ -14,8 +14,8 @@ setup(name = 'oosheet',
               'oosheet-merge = oosheet:merge',
               ]
           },
-      install_requires = ['uno'],
-#      url = 'http://oosheet.hacklab.com.br/',
+      # Why isn't install_requires working?
+      #install_requires = ['uno'],
       classifiers = [
           'Intended Audience :: Developers',
           'Natural Language :: English',
@@ -23,5 +23,6 @@ setup(name = 'oosheet',
           'Programming Language :: Python',
           'Topic :: Office/Business :: Financial :: Spreadsheet',
         ],
+#      url = 'http://oosheet.hacklab.com.br/',
       
 )
