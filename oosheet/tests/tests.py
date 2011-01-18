@@ -3,7 +3,8 @@
 """
 Each test must start with test_
 
-clear() is called between each test
+clear() is called between each test.
+Sheets Sheet1 and Sheet2 can be used for tests.
 
 Following parameters can be passed to run_tests.py:
 
@@ -19,7 +20,6 @@ def clear():
     S('a1:z100').delete()
     S('Sheet2.a1:g10').delete()
 
-@dev
 def test_column_name_vs_index_conversion():
     assert S()._col_index('A') == 0
     assert S()._col_index('B') == 1
