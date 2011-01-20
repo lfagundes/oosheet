@@ -124,6 +124,12 @@ class OOSheet(OODoc):
         assert self.start_row == self.end_row
         return self.sheet.getCellByPosition(self.start_col, self.start_row)
 
+    @property
+    def cells(self):
+        for col in range(self.start_col, self.end_col+1):
+            for row in range(self.start_row, self.end_row+1):
+                yield self.sheet.getCellByPosition(col, row)
+
     def __repr__(self):
         return self.selector
 
@@ -172,8 +178,8 @@ class OOSheet(OODoc):
 
     @value.setter
     def value(self, value):
-        assert self.cell is not None
-        self.cell.setValue(value)
+        for cell in self.cells:
+            cell.setValue(value)
 
     def set_value(self, value):
         self.value = value
@@ -186,10 +192,10 @@ class OOSheet(OODoc):
 
     @formula.setter
     def formula(self, formula):
-        assert self.cell is not None
         if not formula.startswith('='):
             formula = '=%s' % formula
-        self.cell.setFormula(formula)
+        for cell in self.cells:
+            cell.setFormula(formula)
 
     def set_formula(self, formula):
         self.formula = formula
@@ -202,8 +208,8 @@ class OOSheet(OODoc):
 
     @string.setter
     def string(self, string):
-        assert self.cell is not None
-        self.cell.setString(string)
+        for cell in self.cells:
+            cell.setString(string)
 
     def set_string(self, string):
         self.string = string
@@ -216,7 +222,6 @@ class OOSheet(OODoc):
 
     @date.setter
     def date(self, date):
-        assert self.cell is not None
         delta = date - self.basedate
         self.value = delta.days
 

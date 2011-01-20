@@ -67,6 +67,41 @@ def test_date():
     S('a1').date += timedelta(5)
     assert S('a1').date == datetime(2010, 12, 22)
 
+def test_data_of_multiple_cells_can_be_changed():
+    S('a1:g10').value = 5
+    assert S('d5').value == 5
+    S('a1:g10').set_value(6)
+    assert S('c4').value == 6
+    
+    S('a1:g10').string = 'hello'
+    assert S('e8').string == 'hello'
+    S('a1:g10').set_string('world')
+    assert S('f2').string == 'world'
+
+    S('a1:g10').date = datetime(2011, 1, 20)
+    assert S('e7').date == datetime(2011, 1, 20)
+    S('a1:g10').set_date(datetime(2011, 1, 21))
+    assert S('f4').date == datetime(2011, 1, 21)
+
+    S('a1').value = 1
+    S('a2:g5').formula = '=a1+3'
+    assert S('b3').value == 4
+    S('a2:g5').set_formula('=a1+5')
+    assert S('b3').value == 6
+
+    S('a1:h11').delete()
+    S('b2:g10').value = 17
+    assert S('a1').value == 0
+    assert S('b1').value == 0
+    assert S('a2').value == 0
+    assert S('b2').value == 17
+    assert S('g11').value == 0
+    assert S('h10').value == 0
+    assert S('h11').value == 0
+    assert S('g10').value == 17
+    
+    
+
 def test_cell_contents_can_be_set_by_methods_which_can_be_cascaded():
     S('a1').set_value(1).drag_to('a5')
     assert S('a5').value == 5
