@@ -130,7 +130,7 @@ class OOSheet(OODoc):
         return col, row
 
     def _col_index(self, name):
-        letters = [ l for l in name ]
+        letters = [ l for l in name.upper() ]
         letters.reverse()
         index = 0
         power = 0
@@ -293,19 +293,50 @@ class OOSheet(OODoc):
         # value is None
         return cell.getValue() == 0 and cell.getString() == '' and cell.getFormula() == ''
         
-    def shift_until(self, col, row, value):
-        while not self._cell_matches(self.cell, value):
-            self.shift(col, row)
-        return self
+    def shift_until(self, col, row, *args, **kwargs):
+        try:
+            value = args[0]
+            while not self._cell_matches(self.cell, value):
+                self.shift(col, row)
+            return self
+        except IndexError:
+            pass
 
-    def shift_right_until(self, value):
-        return self.shift_until(1, 0, value)
-    def shift_left_until(self, value):
-        return self.shift_until(-1, 0, value)
-    def shift_down_until(self, value):
-        return self.shift_until(0, 1, value)
-    def shift_up_until(self, value):
-        return self.shift_until(0, -1, value)
+        assert len(kwargs.keys()) == 1
+        ref = kwargs.keys()[0]
+        value = kwargs[ref]
+        reftype, position = ref.split('_')
+
+        assert reftype in ('row', 'column')
+
+        if reftype == 'row':
+            assert row == 0
+            assert self.start_col == self.end_col
+            ref_row = int(position) - 1
+            ref_col = self.start_col
+        else:
+            assert col == 0
+            assert self.start_row == self.end_row
+            ref_col = self._col_index(position)
+            ref_row = self.start_row
+            
+        cell = self.sheet.getCellByPosition(ref_col, ref_row)
+        while not self._cell_matches(cell, value):
+            self.shift(col, row)
+            ref_col += col
+            ref_row += row
+            cell = self.sheet.getCellByPosition(ref_col, ref_row)
+
+        return self            
+
+    def shift_right_until(self, *args, **kwargs):
+        return self.shift_until(1, 0, *args, **kwargs)
+    def shift_left_until(self, *args, **kwargs):
+        return self.shift_until(-1, 0, *args, **kwargs)
+    def shift_down_until(self, *args, **kwargs):
+        return self.shift_until(0, 1, *args, **kwargs)
+    def shift_up_until(self, *args, **kwargs):
+        return self.shift_until(0, -1, *args, **kwargs)
 
     def shift_right_until_empty(self, row = None):
         assert self.start_col == self.end_col
