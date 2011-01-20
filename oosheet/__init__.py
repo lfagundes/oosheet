@@ -272,6 +272,52 @@ class OOSheet(OODoc):
         self.end_col += 1
         return self
 
+    def copy(self):
+        self.focus()
+        self.dispatch('.uno:Copy')
+        return self
+
+    def cut(self):
+        self.focus()
+        self.dispatch('.uno:Cut')
+        return self
+
+    def paste(self):
+        self.focus()
+        self.dispatch('.uno:Paste')
+        return self
+
+    def delete(self):
+        self.focus()
+        self.dispatch('.uno:Delete', ('Flags', 'A'))
+
+    def format_as(self, selector):
+        OOSheet(selector).copy()
+        self.focus()
+        self.dispatch('.uno:InsertContents',
+                      ('Flags', 'T'),
+                      ('FormulaCommand', 0),
+                      ('SkipEmptyCells', False),
+                      ('Transpose', False),
+                      ('AsLink', False),
+                      ('MoveMode', 4),
+                      )
+
+        self.dispatch('.uno:TerminateInplaceActivation')
+        self.dispatch('.uno:Cancel')
+
+    def undo(self):
+        self.dispatch('.uno:Undo')
+
+    def redo(self):
+        self.dispatch('.uno:Redo')
+
+    def save_as(self, filename):
+        if not filename.startswith('/'):
+            filename = os.path.join(os.environ['PWD'], filename)
+            
+        self.dispatch('.uno:SaveAs', ('URL', 'file://%s' % filename), ('FilterName', 'calc8'))
+        
     def shift(self, col, row):
         self.start_col += col
         self.end_col += col
@@ -361,52 +407,27 @@ class OOSheet(OODoc):
     def shift_up_until(self, *args, **kwargs):
         return self.shift_until(0, -1, *args, **kwargs)
 
-    def copy(self):
-        self.focus()
-        self.dispatch('.uno:Copy')
+    def grow(self, col, row):
+        if col < 0:
+            self.start_col += col
+        else:
+            self.end_col += col
+        if row < 0:
+            self.start_row += row
+        else:
+            self.end_row += row
+
         return self
 
-    def cut(self):
-        self.focus()
-        self.dispatch('.uno:Cut')
-        return self
+    def grow_right(self, num = 1):
+        return self.grow(num, 0)
+    def grow_left(self, num = 1):
+        return self.grow(-num, 0)
+    def grow_up(self, num = 1):
+        return self.grow(0, -num)
+    def grow_down(self, num = 1):
+        return self.grow(0, num)
 
-    def paste(self):
-        self.focus()
-        self.dispatch('.uno:Paste')
-        return self
-
-    def delete(self):
-        self.focus()
-        self.dispatch('.uno:Delete', ('Flags', 'A'))
-
-    def format_as(self, selector):
-        OOSheet(selector).copy()
-        self.focus()
-        self.dispatch('.uno:InsertContents',
-                      ('Flags', 'T'),
-                      ('FormulaCommand', 0),
-                      ('SkipEmptyCells', False),
-                      ('Transpose', False),
-                      ('AsLink', False),
-                      ('MoveMode', 4),
-                      )
-
-        self.dispatch('.uno:TerminateInplaceActivation')
-        self.dispatch('.uno:Cancel')
-
-    def undo(self):
-        self.dispatch('.uno:Undo')
-
-    def redo(self):
-        self.dispatch('.uno:Redo')
-
-    def save_as(self, filename):
-        if not filename.startswith('/'):
-            filename = os.path.join(os.environ['PWD'], filename)
-            
-        self.dispatch('.uno:SaveAs', ('URL', 'file://%s' % filename), ('FilterName', 'calc8'))
-        
     def quit(self):
         self.dispatch('.uno:Quit')
 

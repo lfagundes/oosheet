@@ -99,8 +99,6 @@ def test_data_of_multiple_cells_can_be_changed():
     assert S('h10').value == 0
     assert S('h11').value == 0
     assert S('g10').value == 17
-    
-    
 
 def test_cell_contents_can_be_set_by_methods_which_can_be_cascaded():
     S('a1').set_value(1).drag_to('a5')
@@ -411,3 +409,16 @@ def test_shift_up():
 def test_shifting_works_with_cell_contents():
     S('a1').set_value(10).shift_right().set_value(12).shift_down().set_value(15).shift_left().set_value(17)
     assert S('a2').value == 17
+
+@dev
+def test_selector_can_be_expanded():
+    assert str(S('d4').grow_right()).endswith('.D4:E4')
+    assert str(S('d4').grow_right(2)).endswith('.D4:F4')
+    assert str(S('d4').grow_left()).endswith('.C4:D4')
+    assert str(S('d4').grow_left(2)).endswith('.B4:D4')
+    assert str(S('d4').grow_down()).endswith('.D4:D5')
+    assert str(S('d4').grow_down(2)).endswith('.D4:D6')
+    assert str(S('d4').grow_up()).endswith('.D3:D4')
+    assert str(S('d4').grow_up(2)).endswith('.D2:D4')
+
+    assert str(S('d4:e5').grow_right(2).grow_left(2).grow_down(2).grow_up(2)).endswith('.B2:G7')
