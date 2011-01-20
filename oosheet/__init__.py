@@ -57,7 +57,7 @@ class OODoc(object):
                                         cmd, '', 0, args)
         
 
-    def alert(self, msg, title = u'Atenção'):
+    def alert(self, msg, title = u'Alert'):
         parentWin = self.model.CurrentController.Frame.ContainerWindow
 
         aDescriptor = WindowDescriptor()
@@ -260,29 +260,52 @@ class OOSheet(OODoc):
         self.end_col += 1
         return self
 
-    def shift_right(self, num = 1):
-        self.start_col += num
-        self.end_col += num
-        return self
-    
-    def shift_left(self, num = 1):
-        self.start_col -= num
-        self.end_col -= num
+    def shift(self, col, row):
+        self.start_col += col
+        self.end_col += col
+        self.start_row += row
+        self.end_row += row
+
         assert self.start_col >= 0
+        assert self.start_row >= 0
+
         return self
 
+    def shift_right(self, num = 1):
+        return self.shift(num, 0)
+    def shift_left(self, num = 1):
+        return self.shift(-num, 0)
     def shift_down(self, num = 1):
-        self.start_row += num
-        self.end_row += num
-        return self
-    
+        return self.shift(0, num)
     def shift_up(self, num = 1):
-        self.start_row -= num
-        self.end_row -= num
-        assert self.start_row >= 0
+        return self.shift(0, -num)
+
+    def _cell_matches(self, cell, value):
+        assert type(value) in (types.StringType, types.FloatType, types.IntType, datetime)
+        
+        if type(value) is types.StringType:
+            return cell.string == value
+        if type(value) in (types.FloatType, types.IntType):
+            return cell.value == value
+        if type(value) is datetime:
+            return cell.value == (value - self.basedate).days
+        
+    def shift_until(self, col, row, value):
+        cell = self.sheet.getCellByPosition(col, row)
+        while not self._cell_matches(cell, value):
+            self.shift(col, row)
         return self
-    
-    def find_last_column(self, row = None):
+
+    def shift_right_until(self, value):
+        return self.shift(1, 0, value)
+    def shift_left_until(self, value):
+        return self.shift(-1, 0, value)
+    def shift_down_until(self, value):
+        return self.shift(0, 1, value)
+    def shift_up_until(self, value):
+        return self.shift(0, -1, value)
+
+    def shift_right_until_empty(self, row = None):
         assert self.start_col == self.end_col
 
         col = self.start_col
@@ -297,7 +320,6 @@ class OOSheet(OODoc):
             col += 1
             cell = self.sheet.getCellByPosition(col, row)
             if cell.getValue() == 0 and cell.getString() == '' and cell.getFormula() == '':
-                col -= 1
                 break
             
         cells = '%s%d' % (self._col_name(col), self.start_row+1)
@@ -306,7 +328,7 @@ class OOSheet(OODoc):
         selector = '.'.join([self.sheet.Name, cells])
         return OOSheet(selector)
 
-    def find_last_row(self, col = None):
+    def find_down_until_empty(self, col = None):
         assert self.start_row == self.end_row
 
         row = self.start_row
@@ -320,7 +342,6 @@ class OOSheet(OODoc):
             row += 1
             cell = self.sheet.getCellByPosition(col, row)
             if cell.getValue() == 0 and cell.getString() == '' and cell.getFormula() == '':
-                row -= 1
                 break
 
         cells = '%s%d' % (self._col_name(self.start_col), row+1)

@@ -66,11 +66,6 @@ def test_date():
     S('a1').date += timedelta(5)
     assert S('a1').date == datetime(2010, 12, 22)
 
-def test_drag_calls_can_be_cascaded():
-    S('a1').value = 1
-    S('a1').drag_to('a5').drag_to('c5')
-    assert S('c5').value == 7
-
 def test_cell_contents_can_be_set_by_methods_which_can_be_cascaded():
     S('a1').set_value(1).drag_to('a5')
     assert S('a5').value == 5
@@ -102,6 +97,11 @@ def test_drag_to_with_cell_range():
     assert S('b1').value == 11
     assert S('b2').value == 21
     assert S('b3').value == 31
+
+def test_drag_calls_can_be_cascaded():
+    S('a1').value = 1
+    S('a1').drag_to('a5').drag_to('c5')
+    assert S('c5').value == 7
 
 def test_selector_handles_sheets():
     S('a1').value = 2
@@ -254,49 +254,57 @@ def test_save_as():
     assert os.path.exists(filename)
     os.remove(filename)
 
-def test_find_last_column():
+@dev
+def test_shift_until_works_for_single_cell_with_value_as_parameter():
+    S('g10').string = 'total'
+
+    assert str(S('g1').shift_down_until('total')).endswith('G10')
+    assert str(S('g20').shift_up_until('total')).endswith('G10')
+    assert str(S('a10').shift_right_until('total')).endswith('G10')
+    assert str(S('a20').shift_left_until('total')).endswith('G10')
+
+def test_shift_right_until_empty():
     S('a1').set_value(1).drag_to('g1')
 
-    S('b1').find_last_column().value = 100
-    assert S('g1').value == 100
+    S('b1').shift_right_until_empty().value = 100
+    assert S('f1').value == 100
 
-def test_find_last_column_works_with_ranges():
+def test_shift_right_until_empty_works_with_ranges():
     S('g1').set_value(100).drag_to('g3')
     S('a1').set_value(1).drag_to('a3').drag_to('f3')
     
-    S('b1:3').find_last_column().drag_to('i3')
+    S('b1:3').shift_right_until_empty().shift_left().drag_to('i3')
     assert S('i2').value == 103
 
-def test_find_last_column_may_consider_specific_row():
+def test_shift_right_until_empty_may_consider_specific_row():
     S('a1').set_value(1).drag_to('a5').drag_to('g5')
     S('g3').delete()
     S('f1').set_value(100).drag_to('f5')
 
-    S('a1:5').find_last_column(3).drag_to('g5')
+    S('a1:5').shift_right_until_empty(3).shift_left().drag_to('g5')
     assert S('g1').value == 101
     assert S('g3').value == 103
     assert S('g5').value == 105
-    
 
-def test_find_last_row():
+def test_shift_down_until_empty():
     S('a1').set_value(1).drag_to('a10')
 
-    S('a2').find_last_row().value = 100
-    assert S('a10').value == 100
+    S('a2').shift_down_until_empty().value = 100
+    assert S('a11').value == 100
 
-def test_find_last_row_works_with_ranges():
+def test_shift_down_until_empty_works_with_ranges():
     S('a10').set_value(100).drag_to('c10')
     S('a1').set_value(1).drag_to('c1').drag_to('c9')
 
-    S('a2:c2').find_last_row().drag_to('c12')
+    S('a2:c2').shift_down_until_empty().shift_up().drag_to('c12')
     assert S('b12').value == 103
 
-def test_find_last_row_may_consider_specific_column():
+def test_shift_down_until_empty_may_consider_specific_column():
     S('a1').set_value(1).drag_to('e1').drag_to('e5')
     S('c5').delete()
     S('a4').set_value(100).drag_to('e4')
 
-    S('a1:e1').find_last_row('c').drag_to('e6')
+    S('a1:e1').shift_down_until_empty('c').shift_up().drag_to('e6')
     assert S('a6').value == 102
     assert S('c6').value == 104
     assert S('e6').value == 106
