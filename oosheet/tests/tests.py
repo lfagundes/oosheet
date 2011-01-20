@@ -254,7 +254,6 @@ def test_save_as():
     assert os.path.exists(filename)
     os.remove(filename)
 
-@dev
 def test_shift_until_works_for_single_cell_with_value_as_parameter():
     S('g10').string = 'total'
 

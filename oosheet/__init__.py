@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import uno, re, sys, os, zipfile
+import uno, re, sys, os, zipfile, types
 from datetime import datetime, timedelta
 
 # http://codesnippets.services.openoffice.org/Office/Office.MessageBoxWithTheUNOBasedToolkit.snip
