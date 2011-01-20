@@ -107,8 +107,12 @@ class OOSheet(OODoc):
 
     @property
     def selector(self):
-        start = '%s%d' % (self._col_name(self.start_col), self.start_row + 1)
-        end = '%s%d' % (self._col_name(self.end_col), self.end_row + 1)
+        return self._generate_selector(self.start_col, self.end_col,
+                                       self.start_row, self.end_row)
+    
+    def _generate_selector(self, start_col, end_col, start_row, end_row):
+        start = '%s%d' % (self._col_name(start_col), start_row + 1)
+        end = '%s%d' % (self._col_name(end_col), end_row + 1)
         return '%s.%s:%s' % (self.sheet.Name, start, end)
 
     @property
@@ -307,7 +311,13 @@ class OOSheet(OODoc):
         assert len(kwargs.keys()) == 1
         ref = kwargs.keys()[0]
         value = kwargs[ref]
-        reftype, position = ref.split('_')
+
+        reftype, position = ref.split('_')[:2]
+
+        if ref.endswith('_satisfies'):
+            condition = value
+        else:
+            condition = lambda s: s._cell_matches(s.cell, value)
 
         assert reftype in ('row', 'column')
 
@@ -325,13 +335,11 @@ class OOSheet(OODoc):
                 ref_row = self.end_row
             else:
                 ref_row = self.start_row
-            
-        cell = self.sheet.getCellByPosition(ref_col, ref_row)
-        while not self._cell_matches(cell, value):
+
+        cell = OOSheet(self._generate_selector(ref_col, ref_col, ref_row, ref_row))
+        while not condition(cell):
             self.shift(col, row)
-            ref_col += col
-            ref_row += row
-            cell = self.sheet.getCellByPosition(ref_col, ref_row)
+            cell.shift(col, row)
 
         return self            
 

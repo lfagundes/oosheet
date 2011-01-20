@@ -273,6 +273,7 @@ def test_shift_until_works_for_single_cell_with_value_as_parameter():
     S('g10').date = date
     assert str(S('g1').shift_down_until(date)).endswith('G10')
 
+@dev
 def test_shift_until_works_with_conditions_for_one_dimension_selectors():
     date = datetime(2011, 1, 20)
 
@@ -282,16 +283,17 @@ def test_shift_until_works_with_conditions_for_one_dimension_selectors():
     S('f13').date = date
     S('c14').value = 20
 
-    assert str(S('a1:z1').shift_down_until(column_c = 'total')).endswith('A10:Z10')
-    assert str(S('a1:z1').shift_down_until(column_d = 19)).endswith('A11:Z11')
-    assert str(S('a1:z1').shift_down_until(column_e = 19.5)).endswith('A12:Z12')
-    assert str(S('a1:z1').shift_down_until(column_f = date)).endswith('A13:Z13')
-    assert str(S('a1:z1').shift_down_until(column_c = 20)).endswith('A14:Z14')
+    assert str(S('a1:z1').shift_down_until(column_c = 'total')).endswith('.A10:Z10')
+    assert str(S('a1:z1').shift_down_until(column_d = 19)).endswith('.A11:Z11')
+    assert str(S('a1:z1').shift_down_until(column_e = 19.5)).endswith('.A12:Z12')
+    assert str(S('a1:z1').shift_down_until(column_f = date)).endswith('.A13:Z13')
+    assert str(S('a1:z1').shift_down_until(column_c = 20)).endswith('.A14:Z14')
 
-    assert str(S('a30:z30').shift_up_until(column_c = 'total')).endswith('A10:Z10')
-    assert str(S('a1:a30').shift_right_until(row_11 = 19)).endswith('D1:D30')
-    assert str(S('z1:z30').shift_left_until(row_12 = 19.5)).endswith('E1:E30')
+    assert str(S('a30:z30').shift_up_until(column_c = 'total')).endswith('.A10:Z10')
+    assert str(S('a1:a30').shift_right_until(row_11 = 19)).endswith('.D1:D30')
+    assert str(S('z1:z30').shift_left_until(row_12 = 19.5)).endswith('.E1:E30')
 
+@dev
 def test_shift_until_works_with_conditions_for_two_dimension_selectors():
     date = datetime(2011, 1, 20)
 
@@ -301,15 +303,28 @@ def test_shift_until_works_with_conditions_for_two_dimension_selectors():
     S('f13').date = date
     S('c14').value = 20
 
-    assert str(S('a1:z2').shift_down_until(column_c = 'total')).endswith('A9:Z10')
-    assert str(S('a1:z2').shift_down_until(column_d = 19)).endswith('A10:Z11')
-    assert str(S('a1:z2').shift_down_until(column_e = 19.5)).endswith('A11:Z12')
-    assert str(S('a1:z2').shift_down_until(column_f = date)).endswith('A12:Z13')
-    assert str(S('a1:z4').shift_down_until(column_c = 20)).endswith('A11:Z14')
+    assert str(S('a1:z2').shift_down_until(column_c = 'total')).endswith('.A9:Z10')
+    assert str(S('a1:z2').shift_down_until(column_d = 19)).endswith('.A10:Z11')
+    assert str(S('a1:z2').shift_down_until(column_e = 19.5)).endswith('.A11:Z12')
+    assert str(S('a1:z2').shift_down_until(column_f = date)).endswith('.A12:Z13')
+    assert str(S('a1:z4').shift_down_until(column_c = 20)).endswith('.A11:Z14')
 
-    assert str(S('a20:z30').shift_up_until(column_c = 'total')).endswith('A10:Z20')
-    assert str(S('a1:c30').shift_right_until(row_11 = 19)).endswith('B1:D30')
-    assert str(S('x1:z30').shift_left_until(row_12 = 19.5)).endswith('E1:G30')
+    assert str(S('a20:z30').shift_up_until(column_c = 'total')).endswith('.A10:Z20')
+    assert str(S('a1:c30').shift_right_until(row_11 = 19)).endswith('.B1:D30')
+    assert str(S('x1:z30').shift_left_until(row_12 = 19.5)).endswith('.E1:G30')
+
+@dev
+def test_shift_until_accepts_lambda_to_test_condition():
+    S('f10').string = 'some stuff'
+    S('g10').string = 'one string'
+    S('h11').string = 'another string'
+    S('h12').string = 'another stuff'
+
+    assert str(S('a1:z1').shift_down_until(column_g_satisfies = lambda c: c.string.endswith('string'))).endswith('.A10:Z10')
+    assert str(S('a1:z2').shift_down_until(column_h_satisfies = lambda c: c.string.startswith('another'))).endswith('.A10:Z11')
+    assert str(S('a1:z2').shift_down_until(column_h_satisfies = lambda c: c.string.endswith('stuff'))).endswith('.A11:Z12')
+    assert str(S('a1:a20').shift_right_until(row_10_satisfies = lambda c: c.string.endswith('string'))).endswith('.G1:G20')
+    
 
 def test_shift_right_until_empty():
     S('a1').set_value(1).drag_to('g1')
