@@ -292,6 +292,25 @@ def test_shift_until_works_with_conditions_for_one_dimension_selectors():
     assert str(S('a1:a30').shift_right_until(row_11 = 19)).endswith('D1:D30')
     assert str(S('z1:z30').shift_left_until(row_12 = 19.5)).endswith('E1:E30')
 
+def test_shift_until_works_with_conditions_for_two_dimension_selectors():
+    date = datetime(2011, 1, 20)
+
+    S('c10').string = 'total'
+    S('d11').value = 19
+    S('e12').value = 19.5
+    S('f13').date = date
+    S('c14').value = 20
+
+    assert str(S('a1:z2').shift_down_until(column_c = 'total')).endswith('A9:Z10')
+    assert str(S('a1:z2').shift_down_until(column_d = 19)).endswith('A10:Z11')
+    assert str(S('a1:z2').shift_down_until(column_e = 19.5)).endswith('A11:Z12')
+    assert str(S('a1:z2').shift_down_until(column_f = date)).endswith('A12:Z13')
+    assert str(S('a1:z4').shift_down_until(column_c = 20)).endswith('A11:Z14')
+
+    assert str(S('a20:z30').shift_up_until(column_c = 'total')).endswith('A10:Z20')
+    assert str(S('a1:c30').shift_right_until(row_11 = 19)).endswith('B1:D30')
+    assert str(S('x1:z30').shift_left_until(row_12 = 19.5)).endswith('E1:G30')
+
 def test_shift_right_until_empty():
     S('a1').set_value(1).drag_to('g1')
 

@@ -294,6 +294,8 @@ class OOSheet(OODoc):
         return cell.getValue() == 0 and cell.getString() == '' and cell.getFormula() == ''
         
     def shift_until(self, col, row, *args, **kwargs):
+        assert col != 0 or row != 0
+        
         try:
             value = args[0]
             while not self._cell_matches(self.cell, value):
@@ -311,14 +313,18 @@ class OOSheet(OODoc):
 
         if reftype == 'row':
             assert row == 0
-            assert self.start_col == self.end_col
             ref_row = int(position) - 1
-            ref_col = self.start_col
+            if col > 0:
+                ref_col = self.end_col
+            else:
+                ref_col = self.start_col
         else:
             assert col == 0
-            assert self.start_row == self.end_row
             ref_col = self._col_index(position)
-            ref_row = self.start_row
+            if row > 0:
+                ref_row = self.end_row
+            else:
+                ref_row = self.start_row
             
         cell = self.sheet.getCellByPosition(ref_col, ref_row)
         while not self._cell_matches(cell, value):
