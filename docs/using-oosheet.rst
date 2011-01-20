@@ -183,3 +183,21 @@ For more complex conditions, you can use lambda functions:
 
 The "s" parameter in lambda function will be a 1 cell OOSheet object.
 
+When looking for cells, you must specify a column if you're shifting up or down, and a row if right or left. If you specify a column, the row considered will be the last one if you're going down and the first one if you're going up, and vice-versa. 
+
+Selectors can also be expanded or reduced:
+
+    >>> S('a1:10').grow_right()
+    Sheet1.A1:B10
+    >>> S('a1:g1').grow_down(2)
+    Sheet1.A1:G3
+    >>> S('c3:d4').grow_left()
+    Sheet1.B3:D4
+    >>> S('a1:g10').shrink_down()
+    Sheet1.A1:G9
+    >>> S('a1:g10').shrink_left()
+    Sheet1.B1:G10
+
+
+
+
