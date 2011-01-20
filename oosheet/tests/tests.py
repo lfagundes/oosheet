@@ -326,8 +326,8 @@ def test_shift_until_accepts_none_for_empty_cell():
     S('a1').set_value(1).drag_to('g1').drag_to('g10')
     S('g10').delete()
 
-    assert str(S('b1').shift_right_until(row_1 = None)).endswith(':H1')
-    assert str(S('b1').shift_down_until(column_b = None)).endswith(':B11')
+    assert str(S('b1').shift_right_until(row_1 = None)).endswith('.H1')
+    assert str(S('b1').shift_down_until(column_b = None)).endswith('.B11')
     assert str(S('b1:5').shift_down_until(column_c = None)).endswith('.B7:B11')
     assert str(S('b1:5').shift_right_until(row_2 = None)).endswith('.H1:H5')
     assert str(S('a2:z2').shift_down_until(column_f = None)).endswith('.A11:Z11')

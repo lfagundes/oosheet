@@ -113,7 +113,10 @@ class OOSheet(OODoc):
     def _generate_selector(self, start_col, end_col, start_row, end_row):
         start = '%s%d' % (self._col_name(start_col), start_row + 1)
         end = '%s%d' % (self._col_name(end_col), end_row + 1)
-        return '%s.%s:%s' % (self.sheet.Name, start, end)
+        if start != end:
+            return '%s.%s:%s' % (self.sheet.Name, start, end)
+        else:
+            return '%s.%s' % (self.sheet.Name, start)
 
     @property
     def cell(self):
@@ -302,6 +305,7 @@ class OOSheet(OODoc):
         
         try:
             value = args[0]
+            assert self.cell is not None
             while not self._cell_matches(self.cell, value):
                 self.shift(col, row)
             return self
