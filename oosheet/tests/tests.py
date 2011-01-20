@@ -254,19 +254,20 @@ def test_save_as():
     assert os.path.exists(filename)
     os.remove(filename)
 
+
 def test_shift_until_works_for_single_cell_with_value_as_parameter():
     S('g10').string = 'total'
 
     assert str(S('g1').shift_down_until('total')).endswith('G10')
     assert str(S('g20').shift_up_until('total')).endswith('G10')
     assert str(S('a10').shift_right_until('total')).endswith('G10')
-    assert str(S('a20').shift_left_until('total')).endswith('G10')
+    assert str(S('z10').shift_left_until('total')).endswith('G10')
 
 def test_shift_right_until_empty():
     S('a1').set_value(1).drag_to('g1')
 
     S('b1').shift_right_until_empty().value = 100
-    assert S('f1').value == 100
+    assert S('h1').value == 100
 
 def test_shift_right_until_empty_works_with_ranges():
     S('g1').set_value(100).drag_to('g3')
@@ -350,4 +351,4 @@ def test_shift_up():
 
 def test_shifting_works_with_cell_contents():
     S('a1').set_value(10).shift_right().set_value(12).shift_down().set_value(15).shift_left().set_value(17)
-    assert S('b1').value == 17
+    assert S('a2').value == 17

@@ -281,29 +281,31 @@ class OOSheet(OODoc):
         return self.shift(0, -num)
 
     def _cell_matches(self, cell, value):
-        assert type(value) in (types.StringType, types.FloatType, types.IntType, datetime)
-        
+        assert type(value) in (types.NoneType, types.StringType, types.FloatType, types.IntType, datetime)
+
         if type(value) is types.StringType:
-            return cell.string == value
+            return cell.getString() == value
         if type(value) in (types.FloatType, types.IntType):
-            return cell.value == value
+            return cell.getValue() == value
         if type(value) is datetime:
-            return cell.value == (value - self.basedate).days
+            return cell.getValue() == (value - self.basedate).days
+
+        # value is None
+        return cell.getValue() == 0 and cell.getString() == '' and cell.getFormula() == ''
         
     def shift_until(self, col, row, value):
-        cell = self.sheet.getCellByPosition(col, row)
-        while not self._cell_matches(cell, value):
+        while not self._cell_matches(self.cell, value):
             self.shift(col, row)
         return self
 
     def shift_right_until(self, value):
-        return self.shift(1, 0, value)
+        return self.shift_until(1, 0, value)
     def shift_left_until(self, value):
-        return self.shift(-1, 0, value)
+        return self.shift_until(-1, 0, value)
     def shift_down_until(self, value):
-        return self.shift(0, 1, value)
+        return self.shift_until(0, 1, value)
     def shift_up_until(self, value):
-        return self.shift(0, -1, value)
+        return self.shift_until(0, -1, value)
 
     def shift_right_until_empty(self, row = None):
         assert self.start_col == self.end_col
@@ -328,7 +330,7 @@ class OOSheet(OODoc):
         selector = '.'.join([self.sheet.Name, cells])
         return OOSheet(selector)
 
-    def find_down_until_empty(self, col = None):
+    def shift_down_until_empty(self, col = None):
         assert self.start_row == self.end_row
 
         row = self.start_row
