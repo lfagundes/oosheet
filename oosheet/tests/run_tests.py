@@ -108,6 +108,7 @@ def run_tests(event = None):
             print 'OK'
         else:
             try:
+                test.__call__()
                 if event:
                     S('Tests.c%d' % (i+10)).string = 'OK'
                 else:
