@@ -352,51 +352,6 @@ class OOSheet(OODoc):
     def shift_up_until(self, *args, **kwargs):
         return self.shift_until(0, -1, *args, **kwargs)
 
-    def shift_right_until_empty(self, row = None):
-        assert self.start_col == self.end_col
-
-        col = self.start_col
-        if row is None:
-            row = self.start_row
-        else:
-            row -= 1
-            
-        assert row >= self.start_row and row <= self.end_row
-        
-        while True:
-            col += 1
-            cell = self.sheet.getCellByPosition(col, row)
-            if cell.getValue() == 0 and cell.getString() == '' and cell.getFormula() == '':
-                break
-            
-        cells = '%s%d' % (self._col_name(col), self.start_row+1)
-        if self.end_row != self.start_row:
-            cells += ':%d' % (self.end_row+1)
-        selector = '.'.join([self.sheet.Name, cells])
-        return OOSheet(selector)
-
-    def shift_down_until_empty(self, col = None):
-        assert self.start_row == self.end_row
-
-        row = self.start_row
-        if col is None:
-            col = self.start_col
-        else:
-            col = self._col_index(col.upper())
-
-        assert col >= self.start_col and col <= self.end_col
-        while True:
-            row += 1
-            cell = self.sheet.getCellByPosition(col, row)
-            if cell.getValue() == 0 and cell.getString() == '' and cell.getFormula() == '':
-                break
-
-        cells = '%s%d' % (self._col_name(self.start_col), row+1)
-        if self.end_col != self.start_col:
-            cells += ':%s%d' % (self._col_name(self.end_col), row+1)
-        selector = '.'.join([self.sheet.Name, cells])
-        return OOSheet(selector)
-
     def copy(self):
         self.focus()
         self.dispatch('.uno:Copy')

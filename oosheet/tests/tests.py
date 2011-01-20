@@ -273,7 +273,6 @@ def test_shift_until_works_for_single_cell_with_value_as_parameter():
     S('g10').date = date
     assert str(S('g1').shift_down_until(date)).endswith('G10')
 
-@dev
 def test_shift_until_works_with_conditions_for_one_dimension_selectors():
     date = datetime(2011, 1, 20)
 
@@ -293,7 +292,6 @@ def test_shift_until_works_with_conditions_for_one_dimension_selectors():
     assert str(S('a1:a30').shift_right_until(row_11 = 19)).endswith('.D1:D30')
     assert str(S('z1:z30').shift_left_until(row_12 = 19.5)).endswith('.E1:E30')
 
-@dev
 def test_shift_until_works_with_conditions_for_two_dimension_selectors():
     date = datetime(2011, 1, 20)
 
@@ -313,7 +311,6 @@ def test_shift_until_works_with_conditions_for_two_dimension_selectors():
     assert str(S('a1:c30').shift_right_until(row_11 = 19)).endswith('.B1:D30')
     assert str(S('x1:z30').shift_left_until(row_12 = 19.5)).endswith('.E1:G30')
 
-@dev
 def test_shift_until_accepts_lambda_to_test_condition():
     S('f10').string = 'some stuff'
     S('g10').string = 'one string'
@@ -324,53 +321,17 @@ def test_shift_until_accepts_lambda_to_test_condition():
     assert str(S('a1:z2').shift_down_until(column_h_satisfies = lambda c: c.string.startswith('another'))).endswith('.A10:Z11')
     assert str(S('a1:z2').shift_down_until(column_h_satisfies = lambda c: c.string.endswith('stuff'))).endswith('.A11:Z12')
     assert str(S('a1:a20').shift_right_until(row_10_satisfies = lambda c: c.string.endswith('string'))).endswith('.G1:G20')
-    
 
-def test_shift_right_until_empty():
-    S('a1').set_value(1).drag_to('g1')
+def test_shift_until_accepts_none_for_empty_cell():
+    S('a1').set_value(1).drag_to('g1').drag_to('g10')
+    S('g10').delete()
 
-    S('b1').shift_right_until_empty().value = 100
-    assert S('h1').value == 100
-
-def test_shift_right_until_empty_works_with_ranges():
-    S('g1').set_value(100).drag_to('g3')
-    S('a1').set_value(1).drag_to('a3').drag_to('f3')
-    
-    S('b1:3').shift_right_until_empty().shift_left().drag_to('i3')
-    assert S('i2').value == 103
-
-def test_shift_right_until_empty_may_consider_specific_row():
-    S('a1').set_value(1).drag_to('a5').drag_to('g5')
-    S('g3').delete()
-    S('f1').set_value(100).drag_to('f5')
-
-    S('a1:5').shift_right_until_empty(3).shift_left().drag_to('g5')
-    assert S('g1').value == 101
-    assert S('g3').value == 103
-    assert S('g5').value == 105
-
-def test_shift_down_until_empty():
-    S('a1').set_value(1).drag_to('a10')
-
-    S('a2').shift_down_until_empty().value = 100
-    assert S('a11').value == 100
-
-def test_shift_down_until_empty_works_with_ranges():
-    S('a10').set_value(100).drag_to('c10')
-    S('a1').set_value(1).drag_to('c1').drag_to('c9')
-
-    S('a2:c2').shift_down_until_empty().shift_up().drag_to('c12')
-    assert S('b12').value == 103
-
-def test_shift_down_until_empty_may_consider_specific_column():
-    S('a1').set_value(1).drag_to('e1').drag_to('e5')
-    S('c5').delete()
-    S('a4').set_value(100).drag_to('e4')
-
-    S('a1:e1').shift_down_until_empty('c').shift_up().drag_to('e6')
-    assert S('a6').value == 102
-    assert S('c6').value == 104
-    assert S('e6').value == 106
+    assert str(S('b1').shift_right_until(row_1 = None)).endswith(':H1')
+    assert str(S('b1').shift_down_until(column_b = None)).endswith(':B11')
+    assert str(S('b1:5').shift_down_until(column_c = None)).endswith('.B7:B11')
+    assert str(S('b1:5').shift_right_until(row_2 = None)).endswith('.H1:H5')
+    assert str(S('a2:z2').shift_down_until(column_f = None)).endswith('.A11:Z11')
+    assert str(S('a2:z2').shift_down_until(column_g = None)).endswith('.A10:Z10')
 
 def test_shift_right():
     S('a1').set_value(1).drag_to('a10').drag_to('f10')
