@@ -428,6 +428,30 @@ class OOSheet(OODoc):
     def grow_down(self, num = 1):
         return self.grow(0, num)
 
+    def shrink(self, col, row):
+        if col < 0:
+            self.start_col -= col
+        else:
+            self.end_col -= col
+        if row < 0:
+            self.start_row -= row
+        else:
+            self.end_row -= row
+
+        assert self.start_row <= self.end_row
+        assert self.start_col <= self.end_col
+
+        return self
+
+    def shrink_right(self, num = 1):
+        return self.shrink(num, 0)
+    def shrink_left(self, num = 1):
+        return self.shrink(-num, 0)
+    def shrink_up(self, num = 1):
+        return self.shrink(0, -num)
+    def shrink_down(self, num = 1):
+        return self.shrink(0, num)
+
     def quit(self):
         self.dispatch('.uno:Quit')
 

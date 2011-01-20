@@ -410,7 +410,6 @@ def test_shifting_works_with_cell_contents():
     S('a1').set_value(10).shift_right().set_value(12).shift_down().set_value(15).shift_left().set_value(17)
     assert S('a2').value == 17
 
-@dev
 def test_selector_can_be_expanded():
     assert str(S('d4').grow_right()).endswith('.D4:E4')
     assert str(S('d4').grow_right(2)).endswith('.D4:F4')
@@ -422,3 +421,15 @@ def test_selector_can_be_expanded():
     assert str(S('d4').grow_up(2)).endswith('.D2:D4')
 
     assert str(S('d4:e5').grow_right(2).grow_left(2).grow_down(2).grow_up(2)).endswith('.B2:G7')
+
+def test_selector_can_be_reduced():
+    assert str(S('b2:g7').shrink_right()).endswith('.B2:F7')
+    assert str(S('b2:g7').shrink_right(2)).endswith('.B2:E7')
+    assert str(S('b2:g7').shrink_left()).endswith('.C2:G7')
+    assert str(S('b2:g7').shrink_left(2)).endswith('.D2:G7')
+    assert str(S('b2:g7').shrink_down()).endswith('.B2:G6')
+    assert str(S('b2:g7').shrink_down(2)).endswith('.B2:G5')
+    assert str(S('b2:g7').shrink_up()).endswith('.B3:G7')
+    assert str(S('b2:g7').shrink_up(2)).endswith('.B4:G7')
+
+    assert str(S('B2:G7').shrink_right(2).shrink_left(2).shrink_down(2).shrink_up(2)).endswith('.D4:E5')
