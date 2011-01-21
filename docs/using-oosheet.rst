@@ -199,5 +199,11 @@ Selectors can also be expanded or reduced:
     Sheet1.B1:G10
 
 
+Breakpoint issue
+================
 
+It's worth noticing that *ipdb.set_trace() does not work* when you use OOSheet. This is not an issue from this module, it happens in deeper and darker layers. If you see an error like this:
 
+  SystemError: 'pyuno runtime is not initialized, (the pyuno.bootstrap needs to be called before using any uno classes)'
+
+It's probably because you have an ipdb breakpoint. Use *pdb* instead.
