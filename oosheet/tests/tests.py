@@ -18,7 +18,6 @@ run as macro.
 
 def clear():
     S('a1:z100').delete()
-    S('Sheet2.a1:g10').delete()
 
 def test_column_name_vs_index_conversion():
     assert S()._col_index('A') == 0
@@ -66,6 +65,7 @@ def test_date():
     assert S('a1').date == datetime(2010, 12, 17)
     S('a1').date += timedelta(5)
     assert S('a1').date == datetime(2010, 12, 22)
+    assert '/' in S('a1').string
 
 def test_data_of_multiple_cells_can_be_changed():
     S('a1:g10').value = 5
@@ -138,6 +138,7 @@ def test_drag_calls_can_be_cascaded():
     assert S('c5').value == 7
 
 def test_selector_handles_sheets():
+    """This test requires english OpenOffice"""
     S('a1').value = 2
     S('Sheet2.a1').value = 5
 
@@ -149,6 +150,8 @@ def test_selector_handles_sheets():
 
     assert S('Sheet2.b1').value == 6
     assert S('Sheet2.b2').value == 4
+
+    S('Sheet2.a1:g10').delete()
 
 def test_delete():
     S('a1').value = 1

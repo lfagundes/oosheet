@@ -261,6 +261,13 @@ class OOSheet(OODoc):
         delta = date - self.basedate
         self.value = delta.days
 
+        date_format = uno.getConstantByName( "com.sun.star.util.NumberFormat.DATE" )
+        formats = self.model.getNumberFormats()
+        locale = uno.createUnoStruct( "com.sun.star.lang.Locale" )
+        cells = self.sheet.getCellRangeByName(self.selector)
+        cells.NumberFormat = formats.getStandardFormat( date_format, locale )
+
+
     def set_date(self, date):
         self.date = date
         return self
@@ -495,7 +502,7 @@ class OOSheet(OODoc):
         self.dispatch('.uno:Quit')
 
 
-class OOMerger():
+class OOPacker():
 
     def __init__(self, ods, script):
         self.ods = zipfile.ZipFile(ods, 'a')
@@ -520,7 +527,7 @@ class OOMerger():
         self.ods.writestr('META-INF/manifest.xml', ''.join(manifest))
         
 
-    def merge(self):
+    def pack(self):
         self.ods.write(self.script, 'Scripts/python/%s' % self.script_name)
         
         self.manifest_add('Scripts/')
@@ -529,7 +536,7 @@ class OOMerger():
 
         self.ods.close()
 
-def merge():
+def pack():
     try:
         document = sys.argv[1]
         script = sys.argv[2]
@@ -544,7 +551,7 @@ def merge():
         sys.stderr.write("%s not found" % script)
         print_help()
 
-    OOMerger(document, script).merge()
+    OOPacker(document, script).pack()
 
 def print_help():
     script_name = sys.argv[0].split('/')[-1]

@@ -11,7 +11,7 @@ setup(name = 'oosheet',
       packages = find_packages(),
       entry_points = {
           'console_scripts': [
-              'oosheet-merge = oosheet:merge',
+              'oosheet-pack = oosheet:pack',
               ]
           },
       # Why isn't install_requires working?
