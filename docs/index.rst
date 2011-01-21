@@ -25,6 +25,8 @@ Download / Install
 For now, cloning the source from github is the only way. Using `git <http://git-scm.com/>`_:
 
     $ git clone http://github.com/lfagundes/oosheet.git
+    $ cd oosheet
+    $ python setup.py install
 
 You'll need git and python uno. If you use a Debian-based GNU/Linux distribution (like Ubuntu), you can do this with:
 
