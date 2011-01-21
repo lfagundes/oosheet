@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 
 import unittest
 
-from oosheet import OOSheet as S, OOMerger
+from oosheet import OOSheet as S, OOPacker
 
 def dev(func):
     func.dev = True
@@ -149,7 +149,7 @@ if __name__ == '__main__':
                 script.write(open(tests_file).read())
         script.close()
 
-        OOMerger(testsheet, script_path).merge()
+        OOPacker(testsheet, script_path).pack()
 
         os.remove(script_path)
 
