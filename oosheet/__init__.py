@@ -9,9 +9,21 @@ from com.sun.star.awt.WindowClass import MODALTOP
 from com.sun.star.awt.VclWindowPeerAttribute import OK
 
 class OODoc(object):
-
+    """Interacts with any OpenOffice.org instance, not necessarily a Spreadsheet.
+    This is the actual wrapper around python-uno.
+    """
     @property
     def model(self):
+        """Desktop's current component, a pyuno object of type com.sun.star.lang.XComponent.
+        From this the document data can be manipulated.
+
+        For example, to manipulate Sheet1.A1 cell through this:
+        
+        >>> OODoc().model.Sheets.getByIndex(0).getCellByPosition(0, 0)
+
+        The current environment is detected to decide to connect either via socket or directly.
+        
+        """
         localContext = uno.getComponentContext()
         if sys.modules.get('pythonscript'):
             # We're inside openoffice macro
@@ -28,6 +40,16 @@ class OODoc(object):
 
     @property
     def dispatcher(self):
+        """A python-uno dispatcher object, of type com.sun.star.uno.XInterface
+        From this user events can be simulated.
+
+        For example, to focus on Sheet1.A1 through this:
+        
+        >>> doc = OODoc()
+        >>> doc.dispatcher.executeDispatch(doc.model.getCurrentController(), '.uno:GoToCell', '', 0, doc.args(('ToPoint', 'Sheet1.A1')))
+        
+        The current environment is detected to decide to connect either via socket or directly.
+        """
         localContext = uno.getComponentContext()
         if sys.modules.get('pythonscript'):
             ctx = localContext
@@ -39,6 +61,9 @@ class OODoc(object):
         return smgr.createInstanceWithContext( "com.sun.star.frame.DispatchHelper", ctx)
 
     def args(self, *args):
+        """Receives a list of tupples and returns a list of com.sun.star.beans.PropertyValue objects corresponding to those tupples.
+        This result can be passed to OODoc.dispatcher.
+        """
         uno_struct = []
 
         for i, arg in enumerate(args):
@@ -50,6 +75,12 @@ class OODoc(object):
         return tuple(uno_struct)
 
     def dispatch(self, cmd, *args):
+        """Combines OODoc.dispatcher and OODoc.args to dispatch a event.
+        For example, to focus on Sheet1.A1:
+
+        >>> OODoc().dispatch('.uno:GoToCell', ('ToPoint', 'Sheet1.A1'))
+        
+        """
         if args:
             args = self.args(*args)
 
@@ -58,6 +89,8 @@ class OODoc(object):
         
 
     def alert(self, msg, title = u'Alert'):
+        """Opens an alert window with a message and title, and requires user to click 'Ok'
+        """
         parentWin = self.model.CurrentController.Frame.ContainerWindow
 
         aDescriptor = WindowDescriptor()
@@ -79,6 +112,9 @@ class OODoc(object):
 
     
 class OOSheet(OODoc):
+    """Interacts with an OpenOffice.org Spreadsheet instance.
+    This is the actual wrapper around python-uno.
+    """
 
     def __init__(self, selector = None):
         if not selector:
@@ -451,6 +487,9 @@ class OOSheet(OODoc):
         return self.shrink(0, -num)
     def shrink_down(self, num = 1):
         return self.shrink(0, num)
+
+    def clone(self):
+        return OOSheet(self.selector)
 
     def quit(self):
         self.dispatch('.uno:Quit')

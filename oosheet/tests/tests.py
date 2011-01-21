@@ -433,3 +433,10 @@ def test_selector_can_be_reduced():
     assert str(S('b2:g7').shrink_up(2)).endswith('.B4:G7')
 
     assert str(S('B2:G7').shrink_right(2).shrink_left(2).shrink_down(2).shrink_up(2)).endswith('.D4:E5')
+
+def test_object_can_be_cloned():
+    start = S('a1')
+    end = S('a1').clone().shift_right()
+
+    assert str(start).endswith('.A1')
+    assert str(end).endswith('.B1')
