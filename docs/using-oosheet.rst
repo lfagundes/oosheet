@@ -48,7 +48,7 @@ and so on.
 Data manipulation
 =================
 
-Each cell has three relevant attributes concerning its data: value, string and formula. Besides that, OOSheet adds the "date" attribute, that is just a wrapper around value to work with datetime.datetime objects. Setting one of these 4 attributes will modify all of them accordinly.
+Each cell has three relevant attributes concerning its data: value, string and formula. Besides that, OOSheet adds the "date" attribute, that is a wrapper around value to work with datetime.datetime objects and properly format date cells. Setting one of these 4 attributes will modify all of them accordinly.
 
 Value is always a float and is not seen by the user. String is the representation you see inside the cell. Formula is the one you see at the formula box on top of the spreadsheet and generates a value and string. Dates are represented as values internally, counting the number of days since 30/12/1899, but that is transparent to developers using OOSheet.
 
@@ -87,11 +87,9 @@ The following code illustrates how to deal with those types:
     >>> S('a1').value
     40562.0
     >>> S('a1').string
-    u'40562'
+    u'01/19/2011'
     >>> S('a1').formula
     u'40562'
-
-    (Note that setting a date will not format the cell as date. Trying to guess a good date format will potencially mess with your formatting, so OOSheet leaves this to you.)
 
 Alternatively, you can use set_value(), set_string(), set_formula() and set_date() methods:
 

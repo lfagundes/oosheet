@@ -65,6 +65,7 @@ def test_date():
     assert S('a1').date == datetime(2010, 12, 17)
     S('a1').date += timedelta(5)
     assert S('a1').date == datetime(2010, 12, 22)
+    assert '/' in S('a1').string
 
 def test_data_of_multiple_cells_can_be_changed():
     S('a1:g10').value = 5

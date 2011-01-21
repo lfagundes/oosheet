@@ -225,6 +225,13 @@ class OOSheet(OODoc):
         delta = date - self.basedate
         self.value = delta.days
 
+        date_format = uno.getConstantByName( "com.sun.star.util.NumberFormat.DATE" )
+        formats = self.model.getNumberFormats()
+        locale = uno.createUnoStruct( "com.sun.star.lang.Locale" )
+        cells = self.sheet.getCellRangeByName(self.selector)
+        cells.NumberFormat = formats.getStandardFormat( date_format, locale )
+
+
     def set_date(self, date):
         self.date = date
         return self
