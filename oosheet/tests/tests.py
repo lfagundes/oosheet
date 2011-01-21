@@ -347,6 +347,10 @@ def test_shift_until_works_with_conditions_for_two_dimension_selectors():
     assert str(S('a1:c30').shift_right_until(row_11 = 19)).endswith('.B1:D30')
     assert str(S('x1:z30').shift_left_until(row_12 = 19.5)).endswith('.E1:G30')
 
+def test_shift_until_handles_unicode_properly():
+    S('c10').string = u'fué'
+    assert str(S('a1:d1').shift_down_until(column_c = u'fué')).endswith('.A10:D10')
+
 def test_shift_until_accepts_lambda_to_test_condition():
     S('f10').string = 'some stuff'
     S('g10').string = 'one string'

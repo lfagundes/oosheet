@@ -382,9 +382,9 @@ class OOSheet(OODoc):
         return self.shift(0, -num)
 
     def _cell_matches(self, cell, value):
-        assert type(value) in (types.NoneType, types.StringType, types.FloatType, types.IntType, datetime)
+        assert type(value) in (types.NoneType, types.StringType, types.UnicodeType, types.FloatType, types.IntType, datetime)
 
-        if type(value) is types.StringType:
+        if type(value) in (types.StringType, types.UnicodeType):
             return cell.getString() == value
         if type(value) in (types.FloatType, types.IntType):
             return cell.getValue() == value
