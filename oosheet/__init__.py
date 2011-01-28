@@ -525,8 +525,8 @@ class OOSheet(OODoc):
         If column is given as condition, then shift must be horizontal, and vice-versa.
         If matching against a value, the type of the value given will be checked and either "value", "string"
         or "date" property of cell will be used.
-        If matching against a lambda function, a python-uno com.sun.star.table.XCell object will be given
-        as parameter to the lambda function.
+        If matching against a lambda function, a single-cell OOSheet object will be given as parameter
+        to the lambda function.
         """
         
         assert col != 0 or row != 0
