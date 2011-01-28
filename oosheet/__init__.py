@@ -188,7 +188,10 @@ class OOSheet(OODoc):
                 yield self.sheet.getCellByPosition(col, row)
 
     def __repr__(self):
-        return self.selector
+        try:
+            return self.selector
+        except AttributeError:
+            return 'empty OOSheet() object'
 
     @property
     def width(self):
