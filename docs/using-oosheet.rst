@@ -12,7 +12,7 @@ There are two ways of using OOSheet. You can either make a python script that ma
 
 No matter what your choice is, the python code is the same and works in any of those environments. So, it's always best to start your development by manipulating an instance of Openoffice.org, so that you don't have to restart it to test your routines.
 
-You must launch OpenOffice.org Spreadsheet allowing socket connections. To do so, use the following command line (in GNU/Linux):
+You must launch OpenOffice.org Spreadsheet allowing socket connections. To do so, use the following command line (in GNU/Linux)::
 
     $ oocalc -accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager"
 
