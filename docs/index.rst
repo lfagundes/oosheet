@@ -22,11 +22,13 @@ For using OOSheet you need a running instance of OpenOffice.org. If you just wan
 Download / Install
 ==================
 
-For now, cloning the source from github is the only way. Using `git <http://git-scm.com/>`_::
+Just type::
 
-    $ git clone http://github.com/lfagundes/oosheet.git
-    $ cd oosheet
-    $ python setup.py install
+    $ pip install oosheet
+
+You can get the `pip command here`_.  
+
+.. _pip command here: http://pip.openplans.org/
 
 You'll need git and python uno. If you use a Debian-based GNU/Linux distribution (like Ubuntu), you can do this with::
 
@@ -34,9 +36,17 @@ You'll need git and python uno. If you use a Debian-based GNU/Linux distribution
 
 OOSheet was developed and tested on Python 2.6 and OpenOffice.org 3.2. It should work in other versions, though. If you try it in other environments, please report results to author.
 
+Source
+======
+
+The OOSheet source can be downloaded as a tar.gz file from http://pypi.python.org/pypi/oosheet
+
+Using ``git <http://git-scm.com/>`_ you can clone the source from http://github.com/lfagundes/oosheet.git
+
 OOSheet is free and open for usage under the `MIT license`_.
 
 .. _MIT license: http://en.wikipedia.org/wiki/MIT_License
+
 
 
 Welcome to oosheet's documentation!
@@ -76,6 +86,11 @@ OOSheet was created by Luis Fagundes and sponsored by `hacklab/ <http://hacklab.
 
 Changelog
 =========
+
+- 0.9.1
+
+  - Documentation changed to include installation instructions with pip and link to website
+  - Code is same as 0.9.0
 
 - 0.9.0
   

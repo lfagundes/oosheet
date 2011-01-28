@@ -1,54 +1,17 @@
-==========
-OO, Sheet!
-==========
 
-This module aims to make it simple to develop OpenOffice.org Spreadsheet scripts using Python.
+oosheet is a module developing OpenOffice.org Spreadsheet automated routines using Python.
 
-It's goals are to provide:
+Documentation is available at http://oosheet.hacklab.com.br/ or else, you can build it from source like this::
+    
+    $ easy_install Sphinx
+    $ cd docs
+    $ make html
 
- - A good and intuitive API for most common spreadsheet routines (the design is inspired by JQuery);
+then open _build/html/index.html in your web browser.
 
- - A quick way to test your routines;
+To run tests, make sure you don't have an instance of OO.org running, and then::
 
- - Simple way to embbed the script in a document and edit it later (OO.org does not) - yet TODO
+    $ python oosheet/tests/run_tests.py
 
+You're supposed to be using a Debian-based GNU/Linux distribution, other environments were not tested, but should work in any GNU/Linux environment.
 
-=================
-2 minute tutorial
-=================
-
-Open Openoffice.org Spreadsheet enabling socket connections:
-
-  oocalc -accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager"
-
-In python shell: (keep the document visible while you do that to see results in real time)
-
-  >>> from oosheet import OOSheet as S
-  >>> import datetime
-
-  Data manipulation:
-
-  >>> S('a1').value = 10
-  >>> S('b1').formula = '=a1+5'
-  >>> S('a1').date = datetime.datetime.now() # a number will appear, you have to format it as date
-  >>> S('a1').date += datetime.timedelta(2)
-  >>> S('c1').string = 'hello world'
-
-  User events simulation:
-
-  >>> S('b1').drag_to('g1')
-  >>> S('a1:g1').drag_to('g10')
-  >>> S('a1').copy() #or cut()
-  >>> S('Sheet2.a1').paste()
-  >>> S('a5').format_as('a1') #you need to put some formatting in a1 to make this relevant
-
-  Row and columns insert and delete:
-
-  >>> S('a5').insert_row() # insert one row before 5
-  >>> S('d1').insert_column() # insert one column before d
-  >>> S('a5').delete_rows() # delete row 5
-  >>> S('d1').delete_columns() # delete column d
-  >>> S('a1:10').delete_rows() # delete rows 1 - 10
-
-
-This module is very new, hope to have more docs soon - December 15th, 2010

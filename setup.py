@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import os
 
 setup(name = 'oosheet',
-      version = '0.1',
+      version = '0.9.1',
       description = 'OpenOffice.org Spreadsheet scripting library',
       long_description = open(os.path.join(os.path.dirname(__file__), "README")).read(),
       author = "Luis Fagundes",
@@ -23,6 +23,6 @@ setup(name = 'oosheet',
           'Programming Language :: Python',
           'Topic :: Office/Business :: Financial :: Spreadsheet',
         ],
-#      url = 'http://oosheet.hacklab.com.br/',
+      url = 'http://oosheet.hacklab.com.br/',
       
 )
