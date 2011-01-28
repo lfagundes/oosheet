@@ -206,6 +206,27 @@ Selectors can also be expanded or reduced:
     >>> S('a1:g10').shrink_left()
     Sheet1.B1:G10
 
+Moving selections can also be done by arithmetical operations. You can add or subtract tupples of (column, row) to make a shift:
+
+    >>> S('a1')
+    Caixa.A1
+    >>> S('a1')
+    Sheet1.A1
+    >>> S('a1') + (1, 0)
+    Sheet1.B1
+    >>> S('a1') + (0, 1)
+    Sheet1.A2
+    >>> S('a1') + (2, 3)
+    Sheet1.C4
+    >>> S('b5:d7') - (1, 2)
+    Sheet1.A3:C5
+
+Subtraction can also be used to calculate the shift between two selections. This may be useful after you do a shift_until:
+
+    >>> S('b5:d7') - S('a1:c3')
+    (1, 4)
+    >>> total_row = S('a1:c10').shift_down_until(col_b = 'Total: ')
+    >>> cols, rows = total_row - S('a1:c10')
 
 Breakpoint issue
 ================
