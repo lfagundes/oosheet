@@ -443,6 +443,20 @@ class OOSheet(OODoc):
 
         return self
 
+    def __add__(self, tup):
+        assert type(tup) is types.TupleType
+        assert len(tup) == 2
+        assert type(tup[0]) in (types.IntType, types.FloatType)
+        assert type(tup[1]) in (types.IntType, types.FloatType)
+        return self.clone().shift(int(tup[0]), int(tup[1]))
+
+    def __sub__(self, tup):
+        assert type(tup) is types.TupleType
+        assert len(tup) == 2
+        assert type(tup[0]) in (types.IntType, types.FloatType)
+        assert type(tup[1]) in (types.IntType, types.FloatType)
+        return self + (-tup[0], -tup[1])
+
     def shift_right(self, num = 1):
         """Moves the selector to right, but number of columns given by "num" parameter."""
         return self.shift(num, 0)
