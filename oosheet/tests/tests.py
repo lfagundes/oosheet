@@ -100,6 +100,14 @@ def test_data_of_multiple_cells_can_be_changed():
     assert S('h11').value == 0
     assert S('g10').value == 17
 
+def test_selection_has_width_and_height():
+    assert S('a1').width == 1
+    assert S('a1').height == 1
+    assert S('a2').width == 1
+    assert S('a2').height == 1
+    assert S('b3:c5').width == 2
+    assert S('b3:c5').height == 3
+
 def test_cell_contents_can_be_set_by_methods_which_can_be_cascaded():
     S('a1').set_value(1).drag_to('a5')
     assert S('a5').value == 5
@@ -456,13 +464,14 @@ def test_shifting_can_be_done_with_arithmetic_operations():
     assert str(S('c4') - (2, 3)).endswith('.A1')
     assert str(S('d5:e9') - (3, 4)).endswith('.A1:B5')
 
-def test_selection_has_width_and_height():
-    assert S('a1').width == 1
-    assert S('a1').height == 1
-    assert S('a2').width == 1
-    assert S('a2').height == 1
-    assert S('b3:c5').width == 2
-    assert S('b3:c5').height == 3
+def test_difference_between_two_selectors_can_be_calculated_with_subtraction():
+    assert S('b4') - S('b3') == (0, 1)
+    assert S('b3') - S('b4') == (0, -1)
+    assert S('c5') - S('a5') == (2, 0)
+    assert S('a5') - S('c5') == (-2, 0)
+    assert S('c5') - S('a2') == (2, 3)
+    assert S('a2') - S('c5') == (-2, -3)
+    assert S('c5:d6') - S('a2:b3') == (2, 3)
 
 def test_selector_can_be_expanded():
     assert str(S('d4').grow_right()).endswith('.D4:E4')
