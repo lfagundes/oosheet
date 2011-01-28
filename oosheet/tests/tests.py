@@ -183,6 +183,12 @@ def test_delete():
     assert S('b2').value == 0
     assert S('b2').string == ''
 
+@dev
+def test_last_rows_and_columns():
+    assert S('a1:g10').first_row.selector.endswith('.A1:G1')
+    assert S('a1:g10').last_row.selector.endswith('.A10:G10')
+    assert S('a1:g10').first_column.selector.endswith('.A1:A10')
+    assert S('a1:g10').last_column.selector.endswith('.G1:G10')
 
 def test_insert_rows():
     S('a1').value = 10

@@ -379,6 +379,19 @@ class OOSheet(OODoc):
         self.end_col += num
         return self
 
+    @property
+    def first_row(self):
+        return self.clone().shrink_down(self.height - 1)
+    @property
+    def last_row(self):
+        return self.clone().shrink_up(self.height - 1)
+    @property
+    def first_column(self):
+        return self.clone().shrink_right(self.width - 1)
+    @property
+    def last_column(self):
+        return self.clone().shrink_left(self.width - 1)
+    
     def copy(self):
         """Focuses and copies the contents, so it can be pasted somewhere else"""
         self.focus()
