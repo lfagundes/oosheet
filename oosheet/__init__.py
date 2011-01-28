@@ -343,19 +343,29 @@ class OOSheet(OODoc):
         self.dispatch('.uno:DeleteColumns')
 
     def insert_row(self):
-        """Insert one row before this selector. The current selector is shift down and expanded
+        """Insert rows before this selector. The current selector is shift down, and expanded
         by one row, so the inserted row gets included in the resulting selector"""
+        return self.insert_rows(1)
+
+    def insert_rows(self, num):
+        """Works as insert_row(), but inserts several rows"""
         self.focus()
-        self.dispatch('.uno:InsertRows')
-        self.end_row += 1
+        for i in range(num):
+            self.dispatch('.uno:InsertRows')
+        self.end_row += num
         return self
 
     def insert_column(self):
         """Insert one column before this selector. The current selector is shift right and expanded
         by one column, so the inserted column gets included in the resulting selector"""
+        return self.insert_columns(1)
+
+    def insert_columns(self, num):
+        """Works as insert_column(), but inserts several columns"""
         self.focus()
-        self.dispatch('.uno:InsertColumns')
-        self.end_col += 1
+        for i in range(num):
+            self.dispatch('.uno:InsertColumns')
+        self.end_col += num
         return self
 
     def copy(self):

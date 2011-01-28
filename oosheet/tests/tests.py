@@ -176,7 +176,7 @@ def test_delete():
     assert S('b2').string == ''
 
 
-def test_insert_row():
+def test_insert_rows():
     S('a1').value = 10
     S('b2').formula = '=a1+5'
 
@@ -194,6 +194,21 @@ def test_insert_row_expands_selector_and_can_be_cascaded():
     S('a2').insert_row().drag_to('b3')
 
     assert S('b3').value == 17
+
+def test_several_rows_can_be_inserted():
+    S('a1').value = 11
+    S('b2').formula = '=a1+5'
+
+    result = S('b2').insert_rows(5)
+
+    assert S('b7').formula.lower() == '=a1+5'
+
+    result.value = 5
+
+    assert S('b2').value == 5
+    assert S('b4').value == 5
+    assert S('b7').value == 5
+    
 
 def test_insert_column():
     S('a1').value = 10
@@ -214,6 +229,19 @@ def test_insert_column_expands_selector_and_can_be_cascaded():
 
     assert S('c2').value == 17
 
+def test_several_columns_can_be_inserted():
+    S('a1').value = 11
+    S('b2').formula = '=a1+5'
+
+    result = S('b2').insert_columns(5)
+
+    assert S('g2').formula.lower() == '=a1+5'
+
+    result.value = 6
+
+    assert S('b2').value == 6
+    assert S('d2').value == 6
+    assert S('g2').value == 6
 
 def test_delete_rows():
     S('d5').value = 2
