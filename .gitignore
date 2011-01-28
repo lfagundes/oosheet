@@ -5,3 +5,4 @@ build/
 dist/
 oosheet.egg-info/
 oosheet/tests/test.ods
+docs/_build
