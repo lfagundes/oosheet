@@ -113,10 +113,20 @@ class OODoc(object):
     
 class OOSheet(OODoc):
     """Interacts with an OpenOffice.org Spreadsheet instance.
-    This is the actual wrapper around python-uno.
+    This high-level library works with a group of cells defined by a selector.
     """
 
     def __init__(self, selector = None):
+        """Constructor gets a selector as parameter. Selector can be one of the following forms:
+        a10
+        a1:10
+        a1:b3
+        Sheet2.a10
+        Sheet3.a1:10
+        SheetX.a1:g10
+
+        Selector is case-insensitive
+        """
         if not selector:
             return
         
@@ -143,6 +153,12 @@ class OOSheet(OODoc):
 
     @property
     def selector(self):
+        """The selector used by an instance, in complete form. It will always in one of two forms:
+        Sheet1.A1
+        Sheet1.A1:A10
+
+        Column labels will always be uppercase.        
+        """
         return self._generate_selector(self.start_col, self.end_col,
                                        self.start_row, self.end_row)
     
@@ -156,12 +172,17 @@ class OOSheet(OODoc):
 
     @property
     def cell(self):
+        """A python-uno com.sun.star.table.XCell object, representing one cell.
+        Only works if selector is a single cell, otherwise raises AssertionError"""
         assert self.start_col == self.end_col
         assert self.start_row == self.end_row
         return self.sheet.getCellByPosition(self.start_col, self.start_row)
 
     @property
     def cells(self):
+        """An generator of all cells of this selector. Each cell returned will be a
+        python-uno com.sun.star.table.XCell object.
+        """
         for col in range(self.start_col, self.end_col+1):
             for row in range(self.start_row, self.end_row+1):
                 yield self.sheet.getCellByPosition(col, row)
@@ -205,59 +226,71 @@ class OOSheet(OODoc):
 
     @property
     def basedate(self):
+        """Hard-coded datetime.datetime object representing the date that corresponds to value 0"""
         return datetime(1899, 12, 30)
 
     @property
     def value(self):
+        """The float value of a cell. Only works for single-cell selectors"""
         assert self.cell is not None
         return self.cell.getValue()
 
     @value.setter
     def value(self, value):
+        """Sets the float value of all cells affected by this selector. Expects a float."""
         for cell in self.cells:
             cell.setValue(value)
 
     def set_value(self, value):
+        """Sets the float value of all cells affected by this selector. Expects a float."""
         self.value = value
         return self
 
     @property
     def formula(self):
+        """The formula of a cell. Only works for single-cell selectors"""
         assert self.cell is not None
         return self.cell.getFormula()
 
     @formula.setter
     def formula(self, formula):
+        """Sets the formula of all cells affected by this selector. Expects a string"""
         if not formula.startswith('='):
             formula = '=%s' % formula
         for cell in self.cells:
             cell.setFormula(formula)
 
     def set_formula(self, formula):
+        """Sets the formula of all cells affected by this selector. Expects a string"""
         self.formula = formula
         return self
 
     @property
     def string(self):
+        """The string representation of a cell. Only works for single-cell selectors"""
         assert self.cell is not None
         return self.cell.getString()
 
     @string.setter
     def string(self, string):
+        """Sets the string of all cells affected by this selector. Expects a string."""
         for cell in self.cells:
             cell.setString(string)
 
     def set_string(self, string):
+        """Sets the string of all cells affected by this selector. Expects a string."""
         self.string = string
         return self
 
     @property
     def date(self):
+        """The date representation of a cell. Only works for single-cell selectors"""
         assert self.cell is not None
         return self.basedate + timedelta(self.value)
 
     @date.setter
     def date(self, date):
+        """Sets the date of all cells affected by this selector. Expects a datetime.datetime object."""
         delta = date - self.basedate
         self.value = delta.days
 
@@ -269,13 +302,17 @@ class OOSheet(OODoc):
 
 
     def set_date(self, date):
+        """Sets the date of all cells affected by this selector. Expects a datetime.datetime object."""
         self.date = date
         return self
 
     def focus(self):
+        """Focuses on all cells of this selector"""
         self.dispatch('.uno:GoToCell', ('ToPoint', self.selector))
 
     def drag_to(self, destiny):
+        """Focuses on cells and drag to the destiny specified by given selector, doing an AutoFill.
+        Destiny is a selector string"""
 
         if '.' in destiny:
             sheet_name, destiny = destiny.split('.')
@@ -296,45 +333,60 @@ class OOSheet(OODoc):
         return self
 
     def delete_rows(self):
+        """Delete all rows that intersect with this selector"""
         self.focus()
         self.dispatch('.uno:DeleteRows')
 
     def delete_columns(self):
+        """Delete all columns that intersect with this selector"""
         self.focus()
         self.dispatch('.uno:DeleteColumns')
 
     def insert_row(self):
+        """Insert one row before this selector. The current selector is shift down and expanded
+        by one row, so the inserted row gets included in the resulting selector"""
         self.focus()
         self.dispatch('.uno:InsertRows')
         self.end_row += 1
         return self
 
     def insert_column(self):
+        """Insert one column before this selector. The current selector is shift right and expanded
+        by one column, so the inserted column gets included in the resulting selector"""
         self.focus()
         self.dispatch('.uno:InsertColumns')
         self.end_col += 1
         return self
 
     def copy(self):
+        """Focuses and copies the contents, so it can be pasted somewhere else"""
         self.focus()
         self.dispatch('.uno:Copy')
         return self
 
     def cut(self):
+        """Focuses and cuts the contents, they'll disappear and can be pasted somewhere"""
         self.focus()
         self.dispatch('.uno:Cut')
         return self
 
     def paste(self):
+        """Focuses and pastes what's been copied or cut"""
         self.focus()
         self.dispatch('.uno:Paste')
         return self
 
     def delete(self):
+        """Deletes the contents of cells in this selector"""
         self.focus()
         self.dispatch('.uno:Delete', ('Flags', 'A'))
 
     def format_as(self, selector):
+        """Copies to the current selector the formmating of the given selector.
+        Internally, copies the other selector and does a "paste special" in the current cells,
+        pasting everything but data. No success has been achieved while trying to use the "brush" tool.
+        """
+        
         OOSheet(selector).copy()
         self.focus()
         self.dispatch('.uno:InsertContents',
@@ -350,18 +402,27 @@ class OOSheet(OODoc):
         self.dispatch('.uno:Cancel')
 
     def undo(self):
+        """Undo the last action"""
         self.dispatch('.uno:Undo')
 
     def redo(self):
+        """Redo the last undo"""
         self.dispatch('.uno:Redo')
 
     def save_as(self, filename):
+        """Saves the current doc to filename. Expects a string representing a path in filesystem.
+        Path can be absolute or relative to PWD environment variable.
+        """
         if not filename.startswith('/'):
             filename = os.path.join(os.environ['PWD'], filename)
             
         self.dispatch('.uno:SaveAs', ('URL', 'file://%s' % filename), ('FilterName', 'calc8'))
         
     def shift(self, col, row):
+        """Moves the selector horizontally by a cell number given by "col" parameter and vertically
+        by "row". Parameters can be negative to determine the direction of shift. Used internally
+        by shift_right, shift_left, shift_up and shift_down methods.
+        """
         self.start_col += col
         self.end_col += col
         self.start_row += row
@@ -373,12 +434,16 @@ class OOSheet(OODoc):
         return self
 
     def shift_right(self, num = 1):
+        """Moves the selector to right, but number of columns given by "num" parameter."""
         return self.shift(num, 0)
     def shift_left(self, num = 1):
+        """Moves the selector to left, but number of columns given by "num" parameter."""
         return self.shift(-num, 0)
     def shift_down(self, num = 1):
+        """Moves the selector down, but number of rows given by "num" parameter."""
         return self.shift(0, num)
     def shift_up(self, num = 1):
+        """Moves the selector up, but number of rows given by "num" parameter."""
         return self.shift(0, -num)
 
     def _cell_matches(self, cell, value):
@@ -395,6 +460,22 @@ class OOSheet(OODoc):
         return cell.getValue() == 0 and cell.getString() == '' and cell.getFormula() == ''
         
     def shift_until(self, col, row, *args, **kwargs):
+        """Moves the selector in direction given by "col" and "row" parameters, until a condition is satisfied.
+        If selector is a single cell, than a value can be given as parameter and shift will be done until
+        that exact value is found.
+        For multiple cells selectors, the parameters can be in one of the following forms:
+           column_LABEL = value
+           row_NUMBER = value
+           column_LABEL_satisfies = lambda
+           row_NUMBER_satisfies = lambda
+
+        If column is given as condition, then shift must be horizontal, and vice-versa.
+        If matching against a value, the type of the value given will be checked and either "value", "string"
+        or "date" property of cell will be used.
+        If matching against a lambda function, a python-uno com.sun.star.table.XCell object will be given
+        as parameter to the lambda function.
+        """
+        
         assert col != 0 or row != 0
         
         try:
@@ -442,15 +523,22 @@ class OOSheet(OODoc):
         return self            
 
     def shift_right_until(self, *args, **kwargs):
+        """Moves selector to right until condition is matched. See shift_until()"""
         return self.shift_until(1, 0, *args, **kwargs)
     def shift_left_until(self, *args, **kwargs):
+        """Moves selector to left until condition is matched. See shift_until()"""
         return self.shift_until(-1, 0, *args, **kwargs)
     def shift_down_until(self, *args, **kwargs):
+        """Moves selector down until condition is matched. See shift_until()"""
         return self.shift_until(0, 1, *args, **kwargs)
     def shift_up_until(self, *args, **kwargs):
+        """Moves selector up until condition is matched. See shift_until()"""
         return self.shift_until(0, -1, *args, **kwargs)
 
     def grow(self, col, row):
+        """Expands the selector by sizes given by "col" and "row" parameter.
+        If col is a positive number, columns will be added to right, if negative to left. Same for row.
+        """        
         if col < 0:
             self.start_col += col
         else:
@@ -463,15 +551,20 @@ class OOSheet(OODoc):
         return self
 
     def grow_right(self, num = 1):
+        """Add columns to right of selector"""
         return self.grow(num, 0)
     def grow_left(self, num = 1):
+        """Add columns to left of selector"""
         return self.grow(-num, 0)
     def grow_up(self, num = 1):
+        """Add rows before selector"""
         return self.grow(0, -num)
     def grow_down(self, num = 1):
+        """Add rows after selector"""
         return self.grow(0, num)
 
     def shrink(self, col, row):
+        """Reduces the size of the selector, in same logic as grow()"""
         if col < 0:
             self.start_col -= col
         else:
@@ -487,24 +580,39 @@ class OOSheet(OODoc):
         return self
 
     def shrink_right(self, num = 1):
+        """Removes columns from right of selector. Does not afect data, only the selector."""
         return self.shrink(num, 0)
     def shrink_left(self, num = 1):
+        """Removes columns from left of selector. Does not afect data, only the selector."""
         return self.shrink(-num, 0)
     def shrink_up(self, num = 1):
+        """Removes rows from beginning of selector. Does not afect data, only the selector."""
         return self.shrink(0, -num)
     def shrink_down(self, num = 1):
+        """Removes rows from end of selector. Does not afect data, only the selector."""
         return self.shrink(0, num)
 
     def clone(self):
+        """Returns a clone of this selector.
+        Useful to preserve a state before calls that modify the selector.
+        """
         return OOSheet(self.selector)
 
     def quit(self):
+        """Closes the OpenOffice.org instance"""
         self.dispatch('.uno:Quit')
 
 
 class OOPacker():
-
+    """This class manipulates a document in OpenDocument format (the one used by OpenOffice.org)
+    to pack python scripts inside it. This is necessary because OpenOffice.org does not offer a way to
+    edit Python scripts.
+    """
     def __init__(self, ods, script):
+        """"ods" and "script" parameters are strings containing the filename of the OpenDocument document and
+        Python script, respectively.
+        For now, expects the document to have .ods format.
+        """
         self.ods = zipfile.ZipFile(ods, 'a')
         self.script = script
 
@@ -512,9 +620,13 @@ class OOPacker():
 
     @property
     def script_name(self):
+        """Gets the script name, ignoring the path of the file"""
         return self.script.rpartition('/')[2]
 
     def manifest_add(self, path):
+        """Parses the META-INF/manifest.xml file inside the document and adds lines to include the
+        Python script.
+        """        
         manifest = []
         for line in self.ods.open('META-INF/manifest.xml'):
             if '</manifest:manifest>' in line:
@@ -528,6 +640,7 @@ class OOPacker():
         
 
     def pack(self):
+        """Packs the Python script inside the document"""
         self.ods.write(self.script, 'Scripts/python/%s' % self.script_name)
         
         self.manifest_add('Scripts/')
@@ -537,6 +650,7 @@ class OOPacker():
         self.ods.close()
 
 def pack():
+    """Command line to pack the script in a document. Acessed as "oosheet-pack"."""
     try:
         document = sys.argv[1]
         script = sys.argv[2]
@@ -554,6 +668,7 @@ def pack():
     OOPacker(document, script).pack()
 
 def print_help():
+    """Prints help message for pack()"""
     script_name = sys.argv[0].split('/')[-1]
     print "Usage: %s document.ods script.py" % script_name
     sys.exit(1)
