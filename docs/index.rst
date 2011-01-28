@@ -77,4 +77,7 @@ OOSheet was created by Luis Fagundes and sponsored by `hacklab/ <http://hacklab.
 Changelog
 =========
 
-No formal releases yet. You're a pioneer! But don't get intimidated, the code is stable and test coverage good.
+- 0.9.0
+  
+  - first release
+
