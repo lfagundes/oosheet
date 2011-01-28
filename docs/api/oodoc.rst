@@ -1,7 +1,7 @@
 
--------
-OOSheet
--------
+-----
+OODoc
+-----
 
 .. automodule:: oosheet
 

@@ -11,24 +11,24 @@ OOSheet API was inspired by `JQuery <http://jquery.com/>`_. It uses selectors in
 Why OOSheet?
 ============
 
-This library was developed in the following scenario: there is a spreadsheet used to manage some business, and as the spreadsheet gets more complex, the need of some more automation raises, and some people might even start saying the word "ERP" around, but there's a big gap between that good naive spreadsheet and a software that would solve all the problems. When you consider macros, you'll see that OO.org Basic is ugly and weird, while Python support is powerful but very tricky. And finally, your routines are likely to be coupled to the structure of your spreadsheet, so the best place to have your macros would be inside your documents, but OO.org provides no way for you to do that.
+When you use a lot of spreadsheets and have some programming skills, writing scripts to make your life easier are something that will come to your mind. If you start to look for your options with OpenOffice.org, you'll see that OO.org Basic is ugly and weird, while Python support is powerful but very tricky. And finally, your routines are likely to be coupled to the structure of your spreadsheet, so the best place to have your macros would be inside your documents, but OO.org provides no way for you to do that.
 
-If you see yourself in need of automation of routines of a spreadsheet, OOSheet is surely for you. 
+If you see yourself in need of automating routines in a spreadsheet and like Python, OOSheet is surely for you. 
 
 If your situation is not really like this but you're considering using PyUno for anything, it's very likely that you'll find OOSheet useful in some way, even if your document is not a spreadsheet. The base class OODoc may be a good general wrapper for PyUno, and OOPacker class can be used to insert your python script in any OO.org document.
 
-For using OOSheet you need a running instance of OpenOffice.org. If you just want to generate a document, for example, as a result of a web system in which user will download some automatically generated spreadsheet, then this module is probably not what you're looking for. It would make more sense to generate the document directly. It could be used though, if you're willing to manage a running OpenOffice.org process.
+For using OOSheet you need a running instance of OpenOffice.org. If you just want to generate a document, for example, as a result of a web system in which user will download some automatically generated spreadsheet, then this module is probably not what you're looking for. It could be used though, if you're willing to manage a running OpenOffice.org process.
 
 Download / Install
 ==================
 
-For now, cloning the source from github is the only way. Using `git <http://git-scm.com/>`_:
+For now, cloning the source from github is the only way. Using `git <http://git-scm.com/>`_::
 
     $ git clone http://github.com/lfagundes/oosheet.git
     $ cd oosheet
     $ python setup.py install
 
-You'll need git and python uno. If you use a Debian-based GNU/Linux distribution (like Ubuntu), you can do this with:
+You'll need git and python uno. If you use a Debian-based GNU/Linux distribution (like Ubuntu), you can do this with::
 
     $ sudo aptitude install python-uno
 
@@ -58,8 +58,9 @@ API Reference
 .. toctree::
     :glob:
     
-    api/*
-
+    api/oodoc
+    api/oosheet
+    api/oopacker
 
 Contributing
 ============
@@ -77,12 +78,3 @@ Changelog
 =========
 
 No formal releases yet. You're a pioneer! But don't get intimidated, the code is stable and test coverage good.
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
