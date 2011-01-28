@@ -102,24 +102,34 @@ This is useful for cascading calls.
 Simulating user events
 ======================
 
-Several user events can be simulated. The code talks for itself:
+Several user events can be simulated: dragging, inserting and deleting rows, cutting and pasting, formatting, undo and redo, saving and quitting.
+
+Dragging does an autofill, as when you drag that little square in the bottom right corner of you selection:
 
     >>> S('a1').value = 1
     >>> S('a1').drag_to('a10')
     >>> S('a1:a10').drag_to('g10')
-    (drag_to does an autofill, what you drag is not the cell itself but that little square in the bottom right corner)
 
-    >>> S('a4').insert_row()
+Rows can be inserted and deleted. Note that when you insert rows or columns, the selector of the object will grow to include the cells just inserted:
+
+    >>> S('a4').insert_row() #insert one row
+    >>> S('a4').insert_rows(7) #inserts seven rows
     >>> S('d1').insert_column()
     >>> S('a7').delete_rows()
     >>> S('g1').delete_columns()
+
+Cut & paste:
 
     >>> S('a8:b8').cut()
     >>> S('a1:4').copy()
     >>> S('j5').paste()
 
+The format of a cell can be used to format another cell. Internally, this is done with a "paste special" that copies data from other cell and pastes the format on the current selection:
+
     >>> S('j4').format_as('a2')
     (you won't see anything, unless you have previously formatted a2 manually. Try setting its background first)
+
+Undo, redo, save_as and quit:
 
     >>> S().undo()
     >>> S().redo()
@@ -200,7 +210,7 @@ Selectors can also be expanded or reduced:
 Breakpoint issue
 ================
 
-It's worth noticing that *ipdb.set_trace() does not work* when you use OOSheet. This is not an issue from this module, it happens in deeper and darker layers. If you see an error like this:
+It's worth noticing that *ipdb.set_trace() does not work* when you use OOSheet. This is not an issue from this module, it happens in deeper and darker layers of python-uno. If you see an error like this:
 
   SystemError: 'pyuno runtime is not initialized, (the pyuno.bootstrap needs to be called before using any uno classes)'
 
