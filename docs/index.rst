@@ -49,8 +49,8 @@ OOSheet is free and open for usage under the `MIT license`_.
 
 
 
-Welcome to oosheet's documentation!
-===================================
+Documentation
+=============
 
 Contents:
 
