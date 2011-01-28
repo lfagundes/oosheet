@@ -514,17 +514,22 @@ class OOSheet(OODoc):
         
     def shift_until(self, col, row, *args, **kwargs):
         """Moves the selector in direction given by "col" and "row" parameters, until a condition is satisfied.
+
         If selector is a single cell, than a value can be given as parameter and shift will be done until
         that exact value is found.
+        
         For multiple cells selectors, the parameters can be in one of the following forms:
-           column_LABEL = value
-           row_NUMBER = value
-           column_LABEL_satisfies = lambda
-           row_NUMBER_satisfies = lambda
+        
+        - column_LABEL = value
+        - row_NUMBER = value
+        - column_LABEL_satisfies = lambda
+        - row_NUMBER_satisfies = lambda
 
         If column is given as condition, then shift must be horizontal, and vice-versa.
+        
         If matching against a value, the type of the value given will be checked and either "value", "string"
         or "date" property of cell will be used.
+        
         If matching against a lambda function, a single-cell OOSheet object will be given as parameter
         to the lambda function.
         """
