@@ -445,7 +445,7 @@ def test_shifting_works_with_cell_contents():
     S('a1').set_value(10).shift_right().set_value(12).shift_down().set_value(15).shift_left().set_value(17)
     assert S('a2').value == 17
 
-def test_shifting_can_be_done_with_aritimetical_operations():
+def test_shifting_can_be_done_with_arithmetic_operations():
     assert str(S('a1') + (1, 0)).endswith('.B1')
     assert str(S('a1') + (0, 1)).endswith('.A2')
     assert str(S('a1') + (2, 3)).endswith('.C4')
@@ -455,6 +455,14 @@ def test_shifting_can_be_done_with_aritimetical_operations():
     assert str(S('a2') - (0, 1)).endswith('.A1')
     assert str(S('c4') - (2, 3)).endswith('.A1')
     assert str(S('d5:e9') - (3, 4)).endswith('.A1:B5')
+
+def test_selection_has_width_and_height():
+    assert S('a1').width == 1
+    assert S('a1').height == 1
+    assert S('a2').width == 1
+    assert S('a2').height == 1
+    assert S('b3:c5').width == 2
+    assert S('b3:c5').height == 3
 
 def test_selector_can_be_expanded():
     assert str(S('d4').grow_right()).endswith('.D4:E4')

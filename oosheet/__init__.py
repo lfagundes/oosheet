@@ -190,6 +190,14 @@ class OOSheet(OODoc):
     def __repr__(self):
         return self.selector
 
+    @property
+    def width(self):
+        return self.end_col - self.start_col + 1
+
+    @property
+    def height(self):
+        return self.end_row - self.start_row + 1
+
     def _position(self, descriptor):
         col = re.findall('^([A-Z]+)', descriptor)[0]
         row = descriptor[len(col):]
