@@ -183,7 +183,6 @@ def test_delete():
     assert S('b2').value == 0
     assert S('b2').string == ''
 
-@dev
 def test_last_rows_and_columns():
     assert S('a1:g10').first_row.selector.endswith('.A1:G1')
     assert S('a1:g10').last_row.selector.endswith('.A10:G10')
@@ -490,6 +489,30 @@ def test_selector_can_be_expanded():
     assert str(S('d4').grow_up(2)).endswith('.D2:D4')
 
     assert str(S('d4:e5').grow_right(2).grow_left(2).grow_down(2).grow_up(2)).endswith('.B2:G7')
+
+def test_grow_until():
+    S('a1').set_value(5).drag_to('a10').drag_to('g10')
+
+    assert S('b3').grow_down_until(column_c = 15).selector.endswith('.B3:B9')
+    assert S('b3').grow_down_until(column_d_satisfies = lambda s: s.value > 14).selector.endswith('.B3:B8')
+    assert S('c4').grow_down_until(column_b = None).selector.endswith('.C4:C11')
+    assert S('b2:d2').grow_down_until(column_a = 11).selector.endswith('.B2:D7')
+    assert S('b2:b3').grow_down_until(column_a = 11).selector.endswith('.B2:B7')
+
+    assert S('e9').grow_up_until(column_c = 8).selector.endswith('.E2:E9')
+    assert S('e9:f10').grow_up_until(column_a_satisfies = lambda s: s.value < 6).selector.endswith('.E1:F10')
+
+    assert S('a3:b4').grow_right_until(row_3_satisfies = lambda s: s.value > 11).selector.endswith('.A3:F4')
+
+    assert S('f4:g5').grow_left_until(row_3_satisfies = lambda s:s.value < 9).selector.endswith('.B4:G5')    
+
+def test_shrink_until():
+    S('a1').set_value(5).drag_to('a10').drag_to('g10')
+
+    assert S('b2:f9').shrink_down_until(column_f = 13).selector.endswith('.B2:F4')
+    assert S('b2:f9').shrink_up_until(column_e_satisfies = lambda s: s.value > 13).selector.endswith('.B6:F9')
+    assert S('b2:f9').shrink_left_until(row_9 = 16).selector.endswith('.D2:F9')
+    assert S('b2:f9').shrink_right_until(row_9 = 16).selector.endswith('.B2:D9')
 
 def test_selector_can_be_reduced():
     assert str(S('b2:g7').shrink_right()).endswith('.B2:F7')
