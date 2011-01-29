@@ -622,6 +622,9 @@ class OOSheet(OODoc):
         return self.grow(0, num)
 
     def grow_until(self, col, row, *args, **kwargs):
+        """Grows the selection in direction given by "col" and "row" parameters, until a condition is satisfied.
+        Conditions are same as shift_until().
+        """
         other = self.clone().shift_until(col, row, *args, **kwargs)
         self.start_row = min(self.start_row, other.start_row)
         self.end_row = max(self.end_row, other.end_row)
@@ -630,16 +633,16 @@ class OOSheet(OODoc):
         return self
         
     def grow_right_until(self, *args, **kwargs):
-        """Expands selection to right until condition is matched. See grow_until()"""
+        """Expands selection to right until condition is matched. Conditions are same as shift_until()"""
         return self.grow_until(1, 0, *args, **kwargs)
     def grow_left_until(self, *args, **kwargs):
-        """Expands selection to left until condition is matched. See grow_until()"""
+        """Expands selection to left until condition is matched. Conditions are same as shift_until()"""
         return self.grow_until(-1, 0, *args, **kwargs)
     def grow_down_until(self, *args, **kwargs):
-        """Expands selection down until condition is matched. See grow_until()"""
+        """Expands selection down until condition is matched. Conditions are same as shift_until()"""
         return self.grow_until(0, 1, *args, **kwargs)
     def grow_up_until(self, *args, **kwargs):
-        """Expands selection up until condition is matched. See grow_until()"""
+        """Expands selection up until condition is matched. Conditions are same as shift_until()"""
         return self.grow_until(0, -1, *args, **kwargs)
 
     def shrink(self, col, row):
@@ -665,26 +668,26 @@ class OOSheet(OODoc):
         """Removes columns from left of selector. Does not afect data, only the selector."""
         return self.shrink(-num, 0)
     def shrink_up(self, num = 1):
-        """Removes rows from beginning of selector. Does not afect data, only the selector."""
+        """Removes rows from top of selector. Does not afect data, only the selector."""
         return self.shrink(0, -num)
     def shrink_down(self, num = 1):
-        """Removes rows from end of selector. Does not afect data, only the selector."""
+        """Removes rows from bottom of selector. Does not afect data, only the selector."""
         return self.shrink(0, num)
 
     def shrink_right_until(self, *args, **kwargs):
-        """Reduces selection to right until condition is matched. Conditions are same as shift_until()"""
+        """Reduces selection on right border until condition is matched. Conditions are same as shift_until()"""
         self.end_col = self.last_column.shift_left_until(*args, **kwargs).end_col
         return self
     def shrink_left_until(self, *args, **kwargs):
-        """Reduces selection to left until condition is matched. Conditions are same as shift_until()"""
+        """Reduces selection on left border until condition is matched. Conditions are same as shift_until()"""
         self.start_col = self.first_column.shift_right_until(*args, **kwargs).start_col
         return self
     def shrink_down_until(self, *args, **kwargs):
-        """Reduces selection down until condition is matched. Conditions are same as shift_until()"""
+        """Reduces selection on bottom border until condition is matched. Conditions are same as shift_until()"""
         self.end_row = self.last_row.shift_up_until(*args, **kwargs).end_row
         return self
     def shrink_up_until(self, *args, **kwargs):
-        """Reduces selection up until condition is matched. Conditions are same as shift_until()"""
+        """Reduces selection on top border until condition is matched. Conditions are same as shift_until()"""
         self.start_row = self.first_row.shift_down_until(*args, **kwargs).start_row
         return self
 
