@@ -110,11 +110,14 @@ Dragging does an autofill, as when you drag that little square in the bottom rig
     >>> S('a1').drag_to('a10')
     >>> S('a1:a10').drag_to('g10')
 
-Rows can be inserted and deleted. Note that when you insert rows or columns, the selector of the object will grow to include the cells just inserted:
+Rows can be inserted and deleted. Note that when you insert rows or columns, the selection of the object will grow to include the cells just inserted:
 
     >>> S('a4').insert_row() #insert one row
+    Sheet1.A4:A5
     >>> S('a4').insert_rows(7) #inserts seven rows
+    Sheet1.A4:A11
     >>> S('d1').insert_column()
+    Sheet1.D1:E1
     >>> S('a7').delete_rows()
     >>> S('g1').delete_columns()
 
@@ -144,9 +147,9 @@ Most methods can be cascaded. For example:
 
     >>> S('a1').set_value(1).drag_to('a10').drag_to('g10')
 
-This is because these methods returns OOSheet objects. Note that the selector is not necessarily preserved, sometimes it is modified. In the above example, set_value() does not change the selector, but drag_to('a10') expands the selector to ('a1:a10'), so the whole column is dragged to G10.
+This is because these methods returns OOSheet objects. Note that the selection is not necessarily preserved, sometimes it is modified. In the above example, set_value() does not change the selection, but drag_to('a10') expands the selection to 'a1:a10', so the whole column is dragged to G10.
 
-The cascading logic is so that the resulting selector should always be as you expect.
+The cascading logic is so that the resulting selection should always be as you expect.
 
 Moving, growing and shrinking selections
 ========================================
@@ -181,7 +184,8 @@ The above example will only work for single cell selectors. For other selectors,
     Sheet1.G1:G10
     >>> S('a1:z1').shift_down_until(column_g = 'total')
     Sheet.A5:Z5
-    (Note that only one parameter is accepted)
+    
+(Note that only one parameter is accepted)
 
 For more complex conditions, you can use lambda functions:
 
@@ -242,6 +246,20 @@ Subtraction can also be used to calculate the shift between two selections. This
     (1, 4)
     >>> total_row = S('a1:c10').shift_down_until(col_b = 'Total: ')
     >>> cols, rows = total_row - S('a1:c10')
+
+Getting the borders
+===================
+
+After shift, grow and shrink operations you may need to get the first or last row or column or your selection. This can be done with first_row, last_row, first_column and last_column properties:
+
+    >>> S('a1:g10').first_row
+    Sheet1.A1:G1
+    >>> S('a1:g10').last_row
+    Sheet1.A10:G10
+    >>> S('a1:g10').first_column
+    Sheet1.A1:A10
+    >>> S('a1:g10').last_column
+    Sheet1.G1:G10
 
 Breakpoint issue
 ================
