@@ -87,12 +87,16 @@ OOSheet was created by Luis Fagundes and sponsored by `hacklab/ <http://hacklab.
 Changelog
 =========
 
-- 0.9.1
+- 0.9.2
+  - [FIX] api documentation error in shift_until()
+  - [NEW] last_row, last_column, first_row, first_column properties
+  - [FIX] __repr__ of empty selector raised error
 
+
+- 0.9.1
   - Documentation changed to include installation instructions with pip and link to website
   - Code is same as 0.9.0
 
 - 0.9.0
-  
   - first release
 
