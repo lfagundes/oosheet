@@ -88,10 +88,10 @@ Changelog
 =========
 
 - 0.9.2
-  - [FIX] api documentation error in shift_until()
+  - [NEW] grow_DIRECTION_until and shrink_DIRECTION_until methods
   - [NEW] last_row, last_column, first_row, first_column properties
+  - [FIX] api documentation error in shift_until()
   - [FIX] __repr__ of empty selector raised error
-
 
 - 0.9.1
   - Documentation changed to include installation instructions with pip and link to website
