@@ -148,8 +148,8 @@ This is because these methods returns OOSheet objects. Note that the selector is
 
 The cascading logic is so that the resulting selector should always be as you expect.
 
-Moving selectors
-================
+Moving, growing and shrinking selections
+========================================
 
 Selectors can be moved. For example:
 
@@ -205,6 +205,21 @@ Selectors can also be expanded or reduced:
     Sheet1.A1:G9
     >>> S('a1:g10').shrink_left()
     Sheet1.B1:G10
+
+There are also grow_DIRECTION_until() and shrink_DIRECTION_until() methods, that works similar to shift_until conditions:
+
+    >>> S('a1').set_value(1).drag_to('a10').drag_to('g10') #setup
+
+    >>> S('a1:b2').grow_right_until(row_2 = 6)
+    Sheet1.A1:E2
+    >>> S('a1:e2').shrink_right_until(row_1 = 3)
+    Sheet1.A1:C2
+    >>> S('a1:b2').grow_down_until(column_c_satisfies = lambda s: s.value > 10)
+    Sheet1.A1:B9
+    >>> S('a1:b9').shrink_down_until(column_c_satisfies = lambda s: s.value < 5)
+    Sheet1.A1:B2
+
+(Note that the reverse of grow_up is shrink_up and not shrink_down. Authors are not sure which way would be best, but currently shrink_down will remove lines from bottom resulting in an upward moving sensation.)
 
 Moving selections can also be done by arithmetical operations. You can add or subtract tupples of (column, row) to make a shift:
 
