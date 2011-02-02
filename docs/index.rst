@@ -87,6 +87,10 @@ OOSheet was created by Luis Fagundes and sponsored by `hacklab/ <http://hacklab.
 Changelog
 =========
 
+- 0.9.3
+
+  - [NEW] flatten() method
+
 - 0.9.2
 
   - [NEW] grow_DIRECTION_until and shrink_DIRECTION_until methods

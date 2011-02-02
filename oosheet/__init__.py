@@ -379,6 +379,16 @@ class OOSheet(OODoc):
         self.end_col += num
         return self
 
+    def flatten(self):
+        """Keeps the value and string of cells in selection, but make them independent of a formula."""
+        for cell in self.cells:
+            if cell.getValue():
+                cell.setValue(cell.getValue())
+            elif cell.getString():
+                cell.setString(cell.getString())
+            
+        return self
+
     @property
     def first_row(self):
         return self.clone().shrink_down(self.height - 1)

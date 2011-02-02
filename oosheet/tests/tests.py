@@ -532,3 +532,33 @@ def test_object_can_be_cloned():
 
     assert str(start).endswith('.A1')
     assert str(end).endswith('.B1')
+
+@dev
+def test_flatten():
+    S('a1').value = 5
+    S('a2').formula = '=a1+3'
+
+    S('a2').flatten()
+    S('a1').value = 10
+
+    assert S('a2').value == 8
+
+    S('a2').formula = '=a1+3'
+    S('a2').drag_to('a10')
+    
+    S('a1:a10').flatten()
+    S('a1').value = 0
+
+    assert S('a2').value == 13
+    assert S('a6').value == 25
+    assert S('a10').value == 37
+
+@dev
+def test_flatten_works_with_string():
+    S('a1').string = 'Hello World'
+    S('a2').formula = u'=SUBSTITUTE(A1; "World"; "Moon")'
+
+    S('a2').flatten()
+    S('a1').string = 'asdf'
+
+    assert S('a2').string == "Hello Moon"
