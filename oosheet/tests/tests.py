@@ -17,6 +17,7 @@ run as macro.
 """
 
 def clear():
+    S('a1').unprotect_sheet()
     S('a1:z100').delete()
 
 def test_column_name_vs_index_conversion():
@@ -533,7 +534,6 @@ def test_object_can_be_cloned():
     assert str(start).endswith('.A1')
     assert str(end).endswith('.B1')
 
-@dev
 def test_flatten():
     S('a1').value = 5
     S('a2').formula = '=a1+3'
@@ -553,7 +553,6 @@ def test_flatten():
     assert S('a6').value == 25
     assert S('a10').value == 37
 
-@dev
 def test_flatten_works_with_string():
     S('a1').string = 'Hello World'
     S('a2').formula = u'=SUBSTITUTE(A1; "World"; "Moon")'
@@ -562,3 +561,47 @@ def test_flatten_works_with_string():
     S('a1').string = 'asdf'
 
     assert S('a2').string == "Hello Moon"
+
+def test_protection():
+    S('a1').unprotect()
+    S('a2').protect()
+
+    S('a1').unprotect_sheet()
+
+    S('a1').value = 10
+    S('a2').value = 15
+
+    S('a2').protect_sheet()
+
+    S('a1').value = 11
+    # this is a valid test, but it's better to avoid the popup during tests
+    # dragging over a2 is a good enough test
+    
+    #S('a2').value = 12
+
+    assert S('a1').value == 11 
+    assert S('a2').value == 15
+
+    S('a1').drag_to('a10')
+
+    # cannot run over a protected cell
+    
+    assert S('a10').value == 0
+
+    S('a2').unprotect_sheet()
+
+    S('a2').value = 20
+
+    assert S('a2').value == 20
+
+    S('a1').set_value(1).drag_to('a10')
+
+    assert S('a2').value == 2
+    assert S('a10').value == 10
+
+    S('Sheet2.a1').protect_sheet()
+    
+    S('Sheet1.a1').value = 17
+
+    assert S('Sheet1.a1').value == 17
+    

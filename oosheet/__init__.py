@@ -127,6 +127,7 @@ class OOSheet(OODoc):
 
         Selector is case-insensitive
         """
+
         if not selector:
             return
         
@@ -707,6 +708,22 @@ class OOSheet(OODoc):
         """
         return OOSheet(self.selector)
 
+    def protect_sheet(self):
+        self.sheet.protect("")
+        return self
+
+    def unprotect_sheet(self):
+        self.sheet.unprotect("")
+        return self
+
+    def protect(self):
+        self.focus()
+        self.dispatch('.uno:Protection', ('Protection.Locked', True))
+    
+    def unprotect(self):
+        self.focus()
+        self.dispatch('.uno:Protection', ('Protection.Locked', False))
+    
     def quit(self):
         """Closes the OpenOffice.org instance"""
         self.dispatch('.uno:Quit')
