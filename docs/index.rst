@@ -90,6 +90,7 @@ Changelog
 - 0.9.3
 
   - [NEW] flatten() method
+  - [NEW] sheet and cell protection
 
 - 0.9.2
 
