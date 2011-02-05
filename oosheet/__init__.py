@@ -708,12 +708,12 @@ class OOSheet(OODoc):
         """
         return OOSheet(self.selector)
 
-    def protect_sheet(self):
-        self.sheet.protect("")
+    def protect_sheet(self, password = ""):
+        self.sheet.protect(password)
         return self
 
-    def unprotect_sheet(self):
-        self.sheet.unprotect("")
+    def unprotect_sheet(self, password = ""):
+        self.sheet.unprotect(password)
         return self
 
     def protect(self):

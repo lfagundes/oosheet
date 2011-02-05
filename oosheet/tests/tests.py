@@ -574,10 +574,8 @@ def test_protection():
     S('a2').protect_sheet()
 
     S('a1').value = 11
-    # this is a valid test, but it's better to avoid the popup during tests
-    # dragging over a2 is a good enough test
     
-    #S('a2').value = 12
+    S('a2').value = 12
 
     assert S('a1').value == 11 
     assert S('a2').value == 15
@@ -605,7 +603,6 @@ def test_protection():
 
     assert S('Sheet1.a1').value == 17
 
-@dev
 def test_protection_can_be_cascaded():
 
     S('a1').unprotect_sheet().unprotect().set_value(2)
@@ -614,4 +611,26 @@ def test_protection_can_be_cascaded():
     S('b1').unprotect()
     S('a1').protect_sheet().protect().shift_right().set_value(3)
     assert S('b1').value == 3
+
+def test_sheet_protection_supports_password():
+
+    S('a1').unprotect()
+    S('a2').value = 5
+    
+    S('a1').set_value(10).drag_to('a3')
+    assert S('a2').value == 11
+    
+    S('a2').protect().protect_sheet("secretpassword")
+    S('a1').set_value(20).drag_to('a3')
+    assert S('a2').value == 11
+
+    S('a2').unprotect_sheet()
+    S('a1').set_value(30).drag_to('a3')
+    assert S('a2').value == 11
+    
+    S('a2').unprotect_sheet("secretpassword")
+    S('a1').set_value(40).drag_to('a3')
+    assert S('a2').value == 41
+    
+    
     
