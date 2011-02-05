@@ -274,6 +274,21 @@ After shift, grow and shrink operations you may need to get the first or last ro
     >>> S('a1:g10').last_column
     Sheet1.G1:G10
 
+Cells protection
+================
+
+Sheets and cells can be protected and unprotected against editions. When sheet is protected, only unprotected cells can be edited, while if sheet is unprotected, all cells can be modified no matter its protection. Sheet can be protected with a password, so that same password is required to unprotect it. 
+
+To protect and unprotect sheets and cells:
+
+    >>> S('Sheet1.a1').protect_sheet()
+    >>> S('Sheet1.a1').unprotect_sheet()
+    >>> S('Sheet1.a1').protect_sheet("secretpassword")
+    >>> S('Sheet1.a1').unprotect_sheet("secretpassword")
+    >>> S('Sheet1.a1').protect()
+    >>> S('Sheet1.a1').unprotect()
+    
+
 Breakpoint issue
 ================
 

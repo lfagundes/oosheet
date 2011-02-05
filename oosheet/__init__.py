@@ -709,19 +709,29 @@ class OOSheet(OODoc):
         return OOSheet(self.selector)
 
     def protect_sheet(self, password = ""):
+        """Protects selection's sheet against editions. When sheet is protected, only unprotected
+        cells can be modified.
+        Password ensures sheet can only be unprotected with same password.
+        """
         self.sheet.protect(password)
         return self
 
     def unprotect_sheet(self, password = ""):
+        """Unprotects selection's sheet against editions. When sheet is unprotected, all cells
+        can be modified.
+        Needs password if sheet has been protected with password.
+        """
         self.sheet.unprotect(password)
         return self
 
     def protect(self):
+        """Protects selection's cells against edition. Only in effect when sheet is protected"""
         self.focus()
         self.dispatch('.uno:Protection', ('Protection.Locked', True))
         return self
     
     def unprotect(self):
+        """Unprotects selections's cell against edition."""
         self.focus()
         self.dispatch('.uno:Protection', ('Protection.Locked', False))
         return self
