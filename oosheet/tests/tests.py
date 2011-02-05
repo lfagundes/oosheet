@@ -604,4 +604,14 @@ def test_protection():
     S('Sheet1.a1').value = 17
 
     assert S('Sheet1.a1').value == 17
+
+@dev
+def test_protection_can_be_cascaded():
+
+    S('a1').unprotect_sheet().unprotect().set_value(2)
+    assert S('a1').value == 2
+
+    S('b1').unprotect()
+    S('a1').protect_sheet().protect().shift_right().set_value(3)
+    assert S('b1').value == 3
     

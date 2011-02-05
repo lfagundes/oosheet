@@ -719,10 +719,12 @@ class OOSheet(OODoc):
     def protect(self):
         self.focus()
         self.dispatch('.uno:Protection', ('Protection.Locked', True))
+        return self
     
     def unprotect(self):
         self.focus()
         self.dispatch('.uno:Protection', ('Protection.Locked', False))
+        return self
     
     def quit(self):
         """Closes the OpenOffice.org instance"""
