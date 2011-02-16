@@ -43,7 +43,9 @@ Examples of possible selectors:
     >>> S('a1:g7') # a 7x7 square with 49 cells
     >>> S('Sheet2.a2:3') # cells A2 and A3 in sheet named "Sheet2"
 
-and so on. 
+and so on. There's also a special selector 'user', that will initialize the OOSheet object with user's selection:
+
+    >>> S('user') # gets the user selection
 
 Data manipulation
 =================
