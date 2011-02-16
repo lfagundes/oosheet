@@ -41,7 +41,7 @@ Source
 
 The OOSheet source can be downloaded as a tar.gz file from http://pypi.python.org/pypi/oosheet
 
-Using ``git <http://git-scm.com/>`_ you can clone the source from http://github.com/lfagundes/oosheet.git
+Using `git <http://git-scm.com/>`_ you can clone the source from http://github.com/lfagundes/oosheet.git
 
 OOSheet is free and open for usage under the `MIT license`_.
 
