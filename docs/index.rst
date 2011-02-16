@@ -87,6 +87,9 @@ OOSheet was created by Luis Fagundes and sponsored by `hacklab/ <http://hacklab.
 Changelog
 =========
 
+- 0.9.3.1
+  - Fixes packaging problem
+
 - 0.9.3
 
   - [NEW] flatten() method
