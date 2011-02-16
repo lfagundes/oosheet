@@ -631,6 +631,18 @@ def test_sheet_protection_supports_password():
     S('a2').unprotect_sheet("secretpassword")
     S('a1').set_value(40).drag_to('a3')
     assert S('a2').value == 41
-    
+
+def test_user_selection():
+
+    S('a1').focus()
+    assert S('user').selector == 'Sheet1.A1'
+    assert S('USER').selector == 'Sheet1.A1'
+
+    S('b2:g10').focus()
+    assert S('user').selector == 'Sheet1.B2:G10'
+
+    S('Sheet2.b2:g10').focus()
+    assert S('user').selector == 'Sheet2.B2:G10'
+
     
     

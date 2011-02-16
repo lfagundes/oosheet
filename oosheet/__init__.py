@@ -130,6 +130,16 @@ class OOSheet(OODoc):
 
         if not selector:
             return
+
+        if selector.lower() == 'user':
+            address = self.model.CurrentSelection.RangeAddress
+            self.sheet = self.model.Sheets.getByIndex(address.Sheet)
+            self.start_col = address.StartColumn
+            self.end_col = address.EndColumn
+            self.start_row = address.StartRow
+            self.end_row = address.EndRow
+            
+            return
         
         try:
             sheet_name, cells = selector.split('.')
