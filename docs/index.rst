@@ -84,6 +84,8 @@ OOSheet was created by Luis Fagundes and sponsored by `hacklab/ <http://hacklab.
 
 `Fudge <http://farmdev.com/projects/fudge/>`_ project also take credits for a good documentation structure, on which this one was based.
 
+Oscar Garcia suggested the user selection feature, implemented in v0.9.4.
+
 Changelog
 =========
 
