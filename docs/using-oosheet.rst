@@ -32,7 +32,7 @@ This will confirm that everything is properly setup. A second hello world could 
 Cells selectors
 ===============
 
-OOSheet uses selectors to determine which cells you are working with. Each instance of OOSheet class receives a selector as parameter. Cell-independent methods, like alert(), do not require a selector.
+OOSheet uses selectors to determine which cells you are working with. Each instance of OOSheet class receives a selector as parameter. 
 
 Examples of possible selectors:
 
@@ -43,9 +43,9 @@ Examples of possible selectors:
     >>> S('a1:g7') # a 7x7 square with 49 cells
     >>> S('Sheet2.a2:3') # cells A2 and A3 in sheet named "Sheet2"
 
-and so on. There's also a special selector 'user', that will initialize the OOSheet object with user's selection:
+and so on. Finally, if no selector is passed, OOSheet object will be initialized with user's selection:
 
-    >>> S('user') # gets the user selection
+    >>> S() # gets the user selection
 
 Data manipulation
 =================

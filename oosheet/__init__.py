@@ -129,9 +129,6 @@ class OOSheet(OODoc):
         """
 
         if not selector:
-            return
-
-        if selector.lower() == 'user':
             address = self.model.CurrentSelection.RangeAddress
             self.sheet = self.model.Sheets.getByIndex(address.Sheet)
             self.start_col = address.StartColumn
