@@ -315,9 +315,12 @@ class OOSheet(OODoc):
 
         date_format = uno.getConstantByName( "com.sun.star.util.NumberFormat.DATE" )
         formats = self.model.getNumberFormats()
-        locale = uno.createUnoStruct( "com.sun.star.lang.Locale" )
         cells = self.sheet.getCellRangeByName(self.selector)
-        cells.NumberFormat = formats.getStandardFormat( date_format, locale )
+        #if formats.getByKey(cells).Type != date_format:
+        for cell in self.cells:
+            if formats.getByKey(cell.NumberFormat).Type != date_format:
+                locale = uno.createUnoStruct( "com.sun.star.lang.Locale" )
+                cell.NumberFormat = formats.getStandardFormat( date_format, locale )
 
 
     def set_date(self, date):
@@ -817,15 +820,4 @@ def print_help():
     script_name = sys.argv[0].split('/')[-1]
     print "Usage: %s document.ods script.py" % script_name
     sys.exit(1)
-
-    
-
-
-        
-        
-
-        
-        
-
-
 

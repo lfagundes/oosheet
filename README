@@ -15,3 +15,5 @@ To run tests, make sure you don't have an instance of OO.org running, and then::
 
 You're supposed to be using a Debian-based GNU/Linux distribution, other environments were not tested, but should work in any GNU/Linux environment.
 
+Tests assume you have your OpenOffice.org in English - USA default language.
+

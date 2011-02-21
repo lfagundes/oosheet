@@ -68,6 +68,20 @@ def test_date():
     assert S('a1').date == datetime(2010, 12, 22)
     assert '/' in S('a1').string
 
+def test_date_only_sets_format_if_not_already_in_date_format():
+
+    S().sheet.getCellRangeByName('Sheet1.A1').NumberFormat = 30
+    S().sheet.getCellRangeByName('Sheet1.A2').NumberFormat = 38
+
+    S('a1:a3').date = datetime(2011, 02, 20)
+
+    # Check if formats have been preserved
+    assert S('a1').string == '2/20/11'
+    assert S('a2').string == 'Sunday, February 20, 2011'
+
+    # Now format must have been set
+    assert '/' in S('a3').string
+
 def test_data_of_multiple_cells_can_be_changed():
     S('a1:g10').value = 5
     assert S('d5').value == 5

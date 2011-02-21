@@ -89,6 +89,10 @@ Oscar Garcia suggested the user selection feature, implemented in v0.9.4.
 Changelog
 =========
 
+- 0.9.4
+  - [NEW] S() now gets user's selection
+  - [FIX] Date format is not automatically set if current format is already a date
+
 - 0.9.3.1
   - Fixes packaging problem
 
