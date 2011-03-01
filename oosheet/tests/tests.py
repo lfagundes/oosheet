@@ -647,7 +647,6 @@ def test_sheet_protection_supports_password():
     assert S('a2').value == 41
 
 def test_user_selection():
-
     S('a1').focus()
     assert S().selector == 'Sheet1.A1'
 
@@ -657,5 +656,12 @@ def test_user_selection():
     S('Sheet2.b2:g10').focus()
     assert S().selector == 'Sheet2.B2:G10'
 
-    
+def test_format_as():
+    S().sheet.getCellRangeByName('Sheet1.A1').NumberFormat = 38
+    S('a1').date = datetime(2011, 03, 1)
+    S('a2:3').date = datetime(2011, 03, 2)
+
+    S('a2').format_as('a1')
+    assert S('a2').string == 'Wednesday, March 02, 2011'
+
     
