@@ -441,7 +441,10 @@ class OOSheet(OODoc):
         Internally, copies the other selector and does a "paste special" in the current cells,
         pasting everything but data. No success has been achieved while trying to use the "brush" tool.
         """
-        
+
+        if type(selector) is type(self):
+            selector = selector.selector
+            
         OOSheet(selector).copy()
         self.focus()
         self.dispatch('.uno:InsertContents',

@@ -656,6 +656,7 @@ def test_user_selection():
     S('Sheet2.b2:g10').focus()
     assert S().selector == 'Sheet2.B2:G10'
 
+@dev
 def test_format_as():
     S().sheet.getCellRangeByName('Sheet1.A1').NumberFormat = 38
     S('a1').date = datetime(2011, 03, 1)
@@ -664,4 +665,6 @@ def test_format_as():
     S('a2').format_as('a1')
     assert S('a2').string == 'Wednesday, March 02, 2011'
 
-    
+    S('a3').format_as(S('a1'))
+    assert S('a3').string == 'Wednesday, March 02, 2011'
+
