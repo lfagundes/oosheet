@@ -576,6 +576,17 @@ def test_flatten_works_with_string():
 
     assert S('a2').string == "Hello Moon"
 
+def test_flatten_works_with_zero_formatted_as_string():
+    S('a1').value = 0
+    S('a2').value = 10
+    S('a3').formula = '=a1+a2'
+    S().sheet.getCellRangeByName('Sheet1.A1:A3').NumberFormat = 105 # $0.--
+
+    string = S('a3').string
+    S('a1').flatten()
+    assert S('a3').string == string    
+    
+
 def test_protection():
     S('a1').unprotect()
     S('a2').protect()
@@ -656,7 +667,6 @@ def test_user_selection():
     S('Sheet2.b2:g10').focus()
     assert S().selector == 'Sheet2.B2:G10'
 
-@dev
 def test_format_as():
     S().sheet.getCellRangeByName('Sheet1.A1').NumberFormat = 38
     S('a1').date = datetime(2011, 03, 1)
