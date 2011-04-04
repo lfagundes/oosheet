@@ -89,6 +89,10 @@ Oscar Garcia suggested the user selection feature, implemented in v0.9.4.
 Changelog
 =========
 
+- 0.9.5
+
+  - [FIX] flatten() breaking fields with formulas based on zero values formatted as strings (ex: R$ 0,00)
+
 - 0.9.4
 
   - [NEW] S() now gets user's selection
