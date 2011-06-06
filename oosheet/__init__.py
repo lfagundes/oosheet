@@ -188,12 +188,20 @@ class OOSheet(OODoc):
 
     @property
     def cells(self):
-        """An generator of all cells of this selector. Each cell returned will be a
+        """A generator of all cells of this selector. Each cell returned will be a
         python-uno com.sun.star.table.XCell object.
         """
         for col in range(self.start_col, self.end_col+1):
             for row in range(self.start_row, self.end_row+1):
                 yield self.sheet.getCellByPosition(col, row)
+
+    @property
+    def data_array(self):
+        """A 2d-tuple with all data of this selection at once.
+        Uses Uno's getDataArray().
+        """
+        return self.sheet.getCellRangeByName(self.selector).getDataArray()
+        
 
     def __repr__(self):
         try:

@@ -678,3 +678,18 @@ def test_format_as():
     S('a3').format_as(S('a1'))
     assert S('a3').string == 'Wednesday, March 02, 2011'
 
+def test_data_array():
+    S('a1').value = 1
+    S('a2').formula = '=a1 * 2'
+    S('b1').formula = '=a1 * 1.5'
+    S('a2').drag_to('a7')
+    S('b1').drag_to('b7')
+    S('b1:b7').drag_to('d7')
+
+    assert len(S('a1:7').data_array) == 7
+    assert len(S('a1:7').data_array[1]) == 1
+    assert S('a1:7').data_array[2] == (4,)
+    assert len(S('a1:c7').data_array[1]) == 3
+    assert S('a1:d7').data_array[5][1] == 48
+    
+
