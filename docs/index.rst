@@ -86,8 +86,14 @@ OOSheet was created by Luis Fagundes and sponsored by `hacklab/ <http://hacklab.
 
 Oscar Garcia suggested the user selection feature, implemented in v0.9.4.
 
+Thomas Lundqvist sent implementation of data_array property, implemented in v0.9.6.
+
 Changelog
 =========
+
+- 0.9.6
+
+  - [NEW] data_array property returns selection's values as 2d-tuple
 
 - 0.9.5
 
