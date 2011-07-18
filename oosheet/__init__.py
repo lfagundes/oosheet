@@ -1,6 +1,28 @@
 # -*- coding: utf-8 -*-
 
-import uno, re, sys, os, zipfile, types
+import sys, os
+
+if sys.platform == 'win32':
+    #This is required in order to make pyuno usable with the default python interpreter under windows
+    #Some environment variables must be modified
+
+    #get the install path from registry
+    import _winreg
+    value = _winreg.QueryValue(_winreg.HKEY_LOCAL_MACHINE, 'SOFTWARE\OpenOffice.org\UNO\InstallPath')
+    install_folder = '\\'.join(value.split('\\')[:-1]) # 'C:\\Program Files\\OpenOffice.org 3'
+
+    #modify the environment variables
+    os.environ['URE_BOOTSTRAP'] = 'vnd.sun.star.pathname:{0}\\program\\fundamental.ini'.format(install_folder)
+    os.environ['UNO_PATH'] = install_folder+'\\program\\'
+
+    sys.path.append(install_folder+'\\Basis\\program')
+
+    paths = ''
+    for path in ("\\URE\\bin;", "\\Basis\\program;"):
+        paths += install_folder + path
+    os.environ['PATH'] =  paths+ os.environ['PATH']
+
+import uno, re, zipfile, types
 from datetime import datetime, timedelta
 
 # http://codesnippets.services.openoffice.org/Office/Office.MessageBoxWithTheUNOBasedToolkit.snip
