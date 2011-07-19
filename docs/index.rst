@@ -88,8 +88,14 @@ Oscar Garcia suggested the user selection feature, implemented in v0.9.4.
 
 Thomas Lundqvist sent implementation of data_array property, implemented in v0.9.6.
 
+Luc Jean sent patch that allows OOSheet to run on Windows Vista with default Python interpreter, v0.9.7
+
 Changelog
 =========
+
+- 0.9.7
+
+  - [FIX] works with default Python interpreter in Windows Vista
 
 - 0.9.6
 
