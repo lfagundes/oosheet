@@ -108,7 +108,6 @@ class OODoc(object):
 
         self.dispatcher.executeDispatch(self.model.getCurrentController(),
                                         cmd, '', 0, args)
-        
 
     def alert(self, msg, title = u'Alert'):
         """Opens an alert window with a message and title, and requires user to click 'Ok'
@@ -209,13 +208,47 @@ class OOSheet(OODoc):
         return self.sheet.getCellByPosition(self.start_col, self.start_row)
 
     @property
-    def cells(self):
+    def _cells(self):
         """A generator of all cells of this selector. Each cell returned will be a
         python-uno com.sun.star.table.XCell object.
         """
         for col in range(self.start_col, self.end_col+1):
             for row in range(self.start_row, self.end_row+1):
                 yield self.sheet.getCellByPosition(col, row)
+        
+    def __iter__(self):
+        # alias for cells property
+        return self.cells
+    
+    @property
+    def cells(self):
+        """
+        A generator of all cells of this selector. Each cell returned will be a
+        single-cell OOSheet object        
+        """
+        for col in range(self.start_col, self.end_col+1):
+            for row in range(self.start_row, self.end_row+1):
+                yield OOSheet(self._generate_selector(col, col, row, row))
+
+    @property
+    def rows(self):
+        """
+        A generator of all cells of this selector. Each cell returned will be a
+        single-cell OOSheet object        
+        """
+        for row in range(self.start_row, self.end_row+1):
+            yield OOSheet(self._generate_selector(self.start_col, self.end_col, row, row))
+
+    @property
+    def columns(self):
+        """
+        A generator of all cells of this selector. Each cell returned will be a
+        single-cell OOSheet object        
+        """
+        for col in range(self.start_col, self.end_col+1):
+            yield OOSheet(self._generate_selector(col, col, self.start_row, self.end_row))
+
+        
 
     @property
     def data_array(self):
@@ -287,7 +320,7 @@ class OOSheet(OODoc):
     @value.setter
     def value(self, value):
         """Sets the float value of all cells affected by this selector. Expects a float."""
-        for cell in self.cells:
+        for cell in self._cells:
             cell.setValue(value)
 
     def set_value(self, value):
@@ -306,7 +339,7 @@ class OOSheet(OODoc):
         """Sets the formula of all cells affected by this selector. Expects a string"""
         if not formula.startswith('='):
             formula = '=%s' % formula
-        for cell in self.cells:
+        for cell in self._cells:
             cell.setFormula(formula)
 
     def set_formula(self, formula):
@@ -323,7 +356,7 @@ class OOSheet(OODoc):
     @string.setter
     def string(self, string):
         """Sets the string of all cells affected by this selector. Expects a string."""
-        for cell in self.cells:
+        for cell in self._cells:
             cell.setString(string)
 
     def set_string(self, string):
@@ -347,7 +380,7 @@ class OOSheet(OODoc):
         formats = self.model.getNumberFormats()
         cells = self.sheet.getCellRangeByName(self.selector)
         #if formats.getByKey(cells).Type != date_format:
-        for cell in self.cells:
+        for cell in self._cells:
             if formats.getByKey(cell.NumberFormat).Type != date_format:
                 locale = uno.createUnoStruct( "com.sun.star.lang.Locale" )
                 cell.NumberFormat = formats.getStandardFormat( date_format, locale )

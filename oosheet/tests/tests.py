@@ -691,5 +691,94 @@ def test_data_array():
     assert S('a1:7').data_array[2] == (4,)
     assert len(S('a1:c7').data_array[1]) == 3
     assert S('a1:d7').data_array[5][1] == 48
+
+@dev
+def test_iterator():
+    for cell in S('a1:10'):
+        cell.value = 31
+
+    for cell in S('b1:c10'):
+        cell.value = 32
+
+    assert S('a1').value == 31
+    assert S('a2').value == 31
+    assert S('a3').value == 31
+    assert S('a4').value == 31
+    assert S('a9').value == 31
+    assert S('a10').value == 31
+
+    assert S('b1').value == 32
+    assert S('b2').value == 32
+    assert S('b3').value == 32
+    assert S('b4').value == 32
+    assert S('b9').value == 32
+    assert S('b10').value == 32
     
+    assert S('c1').value == 32
+    assert S('c2').value == 32
+    assert S('c3').value == 32
+    assert S('c4').value == 32
+    assert S('c9').value == 32
+    assert S('c10').value == 32
+
+@dev
+def test_iterator_as_cells():
+    for cell in S('b1:c10').cells:
+        cell.value = 32
+
+    assert S('b1').value == 32
+    assert S('c10').value == 32
+
+    for cell in S('b1:c10').cells:
+        cell.value = 33
+
+    assert S('b1').value == 33
+    assert S('c10').value == 33
+
+@dev
+def test_iterator_rows():
+    i = 10
+    for row in S('a2:d10').rows:
+        row.value = i
+        i += 1
+
+    assert S('a2').value == 10
+    assert S('b2').value == 10
+    assert S('c2').value == 10
+    assert S('d2').value == 10
+
+    assert S('a3').value == 11
+    assert S('d3').value == 11
+
+    assert S('a9').value == 17
+    assert S('d9').value == 17
+
+    assert S('a10').value == 18
+    assert S('d10').value == 18
+
+    assert S('a1').value == 0
+    assert S('a11').value == 0
+
+@dev
+def test_iterator_columns():
+    i = 10
+    for col in S('b2:d10').columns:
+        col.value = i
+        i += 1
+
+    assert S('b2').value == 10
+    assert S('b3').value == 10
+    assert S('b9').value == 10
+    assert S('b10').value == 10
+
+    assert S('c2').value == 11
+    assert S('c10').value == 11
+
+    assert S('d2').value == 12
+    assert S('d10').value == 12
+
+    assert S('a2').value == 0
+    assert S('e2').value == 0
+    assert S('a11').value == 0
+    assert S('e11').value == 0
 
