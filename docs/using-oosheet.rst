@@ -1,5 +1,5 @@
 
-.. _using-oosheet-with-spreadsheets:
+.. _using-oosheet:
 
 ===============================
 Using OOSheet with Spreadsheets
