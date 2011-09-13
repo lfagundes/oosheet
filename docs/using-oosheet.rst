@@ -119,6 +119,28 @@ It's also possible to access value of cells as a 2d-tuple:
     >>> S('a1:b3').data_array
     ((2.0, 3.0), (3.0, 4.0), (4.0, 5.0))
 
+Iterators
+=========
+
+Selections can be iterated:
+
+    >>> for cell in S('Sheet1.a1:b10'):
+    >>>     print str(cell) # will print something like Sheet1.a3, 
+
+the example above will iterate over 20 cells, in each iteration cell will hold an OOSheet object
+with one cell. Exactly the same thing can be obtained with:
+
+    >>> for cell in S('Sheet1.a1:b10').cells:
+    >>>     print str(cell)
+
+You can also iterate over rows or columns:
+
+    >>> for row in S('Sheet1.a1:b10').rows:
+    >>>     print "This loop will be iterated 10 times"
+
+    >>> for col in S('Sheet1.a1:b10').columns:
+    >>>     print "This loop will be iterated twice"
+
 
 Simulating user events
 ======================
