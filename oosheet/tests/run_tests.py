@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 
 import unittest
 
-from oosheet import OOSheet as S, OOPacker
+from oosheet import OOSheet as S, OODoc, OOPacker
 
 def dev(func):
     func.dev = True

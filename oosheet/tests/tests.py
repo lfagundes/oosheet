@@ -283,6 +283,7 @@ def test_delete_rows():
 
 def test_delete_columns():
     S('f5').value = 2
+
     S('a2').delete_columns()
 
     assert S('e5').value == 2
@@ -777,4 +778,22 @@ def test_iterator_columns():
     assert S('e2').value == 0
     assert S('a11').value == 0
     assert S('e11').value == 0
+
+def test_dispatch():
+    S('a1').value = 10
+    S('a2').formula = '=a1+5'
+
+    OODoc().dispatch('AutomaticCalculation', False)
+
+    try:
+        S('a1').value = 11
+        assert S('a2').value == 15 #automatic calculation is off
+
+        S().dispatch('calculate')
+
+        assert S('a2').value == 16
+
+    finally:
+    
+        OODoc().dispatch('AutomaticCalculation', True)
 

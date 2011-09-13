@@ -1,9 +1,9 @@
 
-.. _using-oosheet:
+.. _using-oosheet-with-spreadsheets:
 
-=============
-Using OOSheet
-=============
+===============================
+Using OOSheet with Spreadsheets
+===============================
 
 Developing with OOSheet
 =======================
@@ -182,6 +182,7 @@ Undo, redo, save_as and quit:
     >>> S().save_as('/tmp/oosheet_sandbox.ods')
     >>> S().quit() # this will close OpenOffice.org
 
+Any OpenOffice.org event can be generated, not only the ones above. See :ref:`recording-macros` for instructions on how to discover events.
 
 Cascading calls
 ===============
@@ -317,7 +318,6 @@ To protect and unprotect sheets and cells:
     >>> S('Sheet1.a1').unprotect_sheet("secretpassword")
     >>> S('Sheet1.a1').protect()
     >>> S('Sheet1.a1').unprotect()
-    
 
 Breakpoint issue
 ================
@@ -326,4 +326,4 @@ It's worth noticing that *ipdb.set_trace() does not work* when you use OOSheet. 
 
   SystemError: 'pyuno runtime is not initialized, (the pyuno.bootstrap needs to be called before using any uno classes)'
 
-It's probably because you have an ipdb breakpoint. Use *pdb* instead.
+it's probably because you have an ipdb breakpoint. Use *pdb* instead.

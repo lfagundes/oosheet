@@ -31,12 +31,14 @@ from com.sun.star.awt.WindowClass import MODALTOP
 from com.sun.star.awt.VclWindowPeerAttribute import OK
 
 class OODoc(object):
-    """Interacts with any OpenOffice.org instance, not necessarily a Spreadsheet.
+    """
+    Interacts with any OpenOffice.org instance, not necessarily a Spreadsheet.
     This is the actual wrapper around python-uno.
     """
     @property
     def model(self):
-        """Desktop's current component, a pyuno object of type com.sun.star.lang.XComponent.
+        """
+        Desktop's current component, a pyuno object of type com.sun.star.lang.XComponent.
         From this the document data can be manipulated.
 
         For example, to manipulate Sheet1.A1 cell through this:
@@ -62,7 +64,8 @@ class OODoc(object):
 
     @property
     def dispatcher(self):
-        """A python-uno dispatcher object, of type com.sun.star.uno.XInterface
+        """
+        A python-uno dispatcher object, of type com.sun.star.uno.XInterface
         From this user events can be simulated.
 
         For example, to focus on Sheet1.A1 through this:
@@ -82,36 +85,57 @@ class OODoc(object):
         smgr = ctx.ServiceManager
         return smgr.createInstanceWithContext( "com.sun.star.frame.DispatchHelper", ctx)
 
-    def args(self, *args):
-        """Receives a list of tupples and returns a list of com.sun.star.beans.PropertyValue objects corresponding to those tupples.
+    def args(self, name, *args):
+        """
+        Receives a list of tupples and returns a list of com.sun.star.beans.PropertyValue objects corresponding to those tupples.
         This result can be passed to OODoc.dispatcher.
         """
         uno_struct = []
 
         for i, arg in enumerate(args):
             struct = uno.createUnoStruct('com.sun.star.beans.PropertyValue')
-            struct.Name = arg[0]
-            struct.Value = arg[1]
+            try:
+                struct.Name = arg[0]
+                struct.Value = arg[1]
+            except TypeError:
+                struct.Name = name
+                struct.Value = arg
+                
             uno_struct.append(struct)
 
         return tuple(uno_struct)
 
     def dispatch(self, cmd, *args):
-        """Combines OODoc.dispatcher and OODoc.args to dispatch a event.
+        """
+        Combines OODoc.dispatcher and OODoc.args to dispatch a event.
         For example, to focus on Sheet1.A1:
 
         >>> OODoc().dispatch('.uno:GoToCell', ('ToPoint', 'Sheet1.A1'))
+
+        The beginning ".uno:" is optional:
+        
+        >>> OODoc().dispatch('GoToCell', ('ToPoint', 'Sheet1.A1'))
+
+        If the event name is a single word, capitalization is unnecessary:
+
+        >>> OODoc().dispatch('calculate')
         
         """
+
+        if cmd.startswith('.uno:'):
+            cmd = cmd.split(':')[1]
+
+        if cmd[0] == cmd[0].lower():
+            cmd = cmd.capitalize()
+
         if args:
-            args = self.args(*args)
+            args = self.args(cmd, *args)
 
         self.dispatcher.executeDispatch(self.model.getCurrentController(),
-                                        cmd, '', 0, args)
+                                        '.uno:%s' % cmd, '', 0, args)
 
     def alert(self, msg, title = u'Alert'):
-        """Opens an alert window with a message and title, and requires user to click 'Ok'
-        """
+        """Opens an alert window with a message and title, and requires user to click 'Ok'"""
         parentWin = self.model.CurrentController.Frame.ContainerWindow
 
         aDescriptor = WindowDescriptor()
@@ -131,14 +155,44 @@ class OODoc(object):
 
         box.execute()
 
-    
+    def undo(self):
+        """Undo the last action"""
+        self.dispatch('.uno:Undo')
+
+    def redo(self):
+        """Redo the last undo"""
+        self.dispatch('.uno:Redo')
+
+    def _file_url(self, filename):
+        if not filename.startswith('/'):
+            filename = os.path.join(os.environ['PWD'], filename)
+
+        return 'file://%s' % filename
+        
+    def save_as(self, filename):
+        """
+        Saves the current doc to filename. Expects a string representing a path in filesystem.
+        Path can be absolute or relative to PWD environment variable.
+        """
+
+        self.dispatch('SaveAs', ('URL', self._file_url(filename)))
+
+    def open(self, filename):
+        """
+        Opens a file. This can also be used to focus on one open document, if several documents are opened.
+        """
+        self.dispatch('Open', ('URL', self._file_url(filename)))
+
+
 class OOSheet(OODoc):
-    """Interacts with an OpenOffice.org Spreadsheet instance.
+    """
+    Interacts with an OpenOffice.org Spreadsheet instance.
     This high-level library works with a group of cells defined by a selector.
     """
 
     def __init__(self, selector = None):
-        """Constructor gets a selector as parameter. Selector can be one of the following forms:
+        """
+        Constructor gets a selector as parameter. Selector can be one of the following forms:
         a10
         a1:10
         a1:b3
@@ -182,7 +236,8 @@ class OOSheet(OODoc):
 
     @property
     def selector(self):
-        """The selector used by an instance, in complete form. It will always in one of two forms:
+        """
+        The selector used by an instance, in complete form. It will always in one of two forms:
         Sheet1.A1
         Sheet1.A1:A10
 
@@ -201,7 +256,8 @@ class OOSheet(OODoc):
 
     @property
     def cell(self):
-        """A python-uno com.sun.star.table.XCell object, representing one cell.
+        """
+        A python-uno com.sun.star.table.XCell object, representing one cell.
         Only works if selector is a single cell, otherwise raises AssertionError"""
         assert self.start_col == self.end_col
         assert self.start_row == self.end_row
@@ -209,7 +265,8 @@ class OOSheet(OODoc):
 
     @property
     def _cells(self):
-        """A generator of all cells of this selector. Each cell returned will be a
+        """
+        A generator of all cells of this selector. Each cell returned will be a
         python-uno com.sun.star.table.XCell object.
         """
         for col in range(self.start_col, self.end_col+1):
@@ -252,7 +309,8 @@ class OOSheet(OODoc):
 
     @property
     def data_array(self):
-        """A 2d-tuple with all data of this selection at once.
+        """
+        A 2d-tuple with all data of this selection at once.
         Uses Uno's getDataArray().
         """
         return self.sheet.getCellRangeByName(self.selector).getDataArray()
@@ -393,18 +451,20 @@ class OOSheet(OODoc):
 
     def focus(self):
         """Focuses on all cells of this selector"""
-        self.dispatch('.uno:GoToCell', ('ToPoint', self.selector))
+        self.dispatch('GoToCell', ('ToPoint', self.selector))
 
     def drag_to(self, destiny):
-        """Focuses on cells and drag to the destiny specified by given selector, doing an AutoFill.
-        Destiny is a selector string"""
+        """
+        Focuses on cells and drag to the destiny specified by given selector, doing an AutoFill.
+        Destiny is a selector string
+        """
 
         if '.' in destiny:
             sheet_name, destiny = destiny.split('.')
             assert sheet_name == self.sheet.Name
             
         self.focus()
-        self.dispatch('.uno:AutoFill', ('EndCell', '%s.%s' % (self.sheet.Name, destiny)))
+        self.dispatch('AutoFill', ('EndCell', '%s.%s' % (self.sheet.Name, destiny)))
 
         if '.' not in destiny:
             destiny = '.'.join([self.sheet.Name, destiny])
@@ -420,12 +480,12 @@ class OOSheet(OODoc):
     def delete_rows(self):
         """Delete all rows that intersect with this selector"""
         self.focus()
-        self.dispatch('.uno:DeleteRows')
+        self.dispatch('DeleteRows')
 
     def delete_columns(self):
         """Delete all columns that intersect with this selector"""
         self.focus()
-        self.dispatch('.uno:DeleteColumns')
+        self.dispatch('DeleteColumns')
 
     def insert_row(self):
         """Insert rows before this selector. The current selector is shift down, and expanded
@@ -436,20 +496,22 @@ class OOSheet(OODoc):
         """Works as insert_row(), but inserts several rows"""
         self.focus()
         for i in range(num):
-            self.dispatch('.uno:InsertRows')
+            self.dispatch('InsertRows')
         self.end_row += num
         return self
 
     def insert_column(self):
-        """Insert one column before this selector. The current selector is shift right and expanded
-        by one column, so the inserted column gets included in the resulting selector"""
+        """
+        Insert one column before this selector. The current selector is shift right and expanded
+        by one column, so the inserted column gets included in the resulting selector
+        """
         return self.insert_columns(1)
 
     def insert_columns(self, num):
         """Works as insert_column(), but inserts several columns"""
         self.focus()
         for i in range(num):
-            self.dispatch('.uno:InsertColumns')
+            self.dispatch('InsertColumns')
         self.end_col += num
         return self
 
@@ -457,7 +519,7 @@ class OOSheet(OODoc):
         """Keeps the value and string of cells in selection, but make them independent of a formula."""
         self.copy()
         self.focus()
-        self.dispatch('.uno:InsertContents',
+        self.dispatch('InsertContents',
                       ('Flags', 'SVDNT'),
                       ('FormulaCommand', 0),
                       ('SkipEmptyCells', False),
@@ -483,28 +545,29 @@ class OOSheet(OODoc):
     def copy(self):
         """Focuses and copies the contents, so it can be pasted somewhere else"""
         self.focus()
-        self.dispatch('.uno:Copy')
+        self.dispatch('Copy')
         return self
 
     def cut(self):
         """Focuses and cuts the contents, they'll disappear and can be pasted somewhere"""
         self.focus()
-        self.dispatch('.uno:Cut')
+        self.dispatch('Cut')
         return self
 
     def paste(self):
         """Focuses and pastes what's been copied or cut"""
         self.focus()
-        self.dispatch('.uno:Paste')
+        self.dispatch('Paste')
         return self
 
     def delete(self):
         """Deletes the contents of cells in this selector"""
         self.focus()
-        self.dispatch('.uno:Delete', ('Flags', 'A'))
+        self.dispatch('Delete', ('Flags', 'A'))
 
     def format_as(self, selector):
-        """Copies to the current selector the formmating of the given selector.
+        """
+        Copies to the current selector the formmating of the given selector.
         Internally, copies the other selector and does a "paste special" in the current cells,
         pasting everything but data. No success has been achieved while trying to use the "brush" tool.
         """
@@ -514,7 +577,7 @@ class OOSheet(OODoc):
             
         OOSheet(selector).copy()
         self.focus()
-        self.dispatch('.uno:InsertContents',
+        self.dispatch('InsertContents',
                       ('Flags', 'T'),
                       ('FormulaCommand', 0),
                       ('SkipEmptyCells', False),
@@ -523,28 +586,12 @@ class OOSheet(OODoc):
                       ('MoveMode', 4),
                       )
 
-        self.dispatch('.uno:TerminateInplaceActivation')
-        self.dispatch('.uno:Cancel')
+        self.dispatch('TerminateInplaceActivation')
+        self.dispatch('Cancel')
 
-    def undo(self):
-        """Undo the last action"""
-        self.dispatch('.uno:Undo')
-
-    def redo(self):
-        """Redo the last undo"""
-        self.dispatch('.uno:Redo')
-
-    def save_as(self, filename):
-        """Saves the current doc to filename. Expects a string representing a path in filesystem.
-        Path can be absolute or relative to PWD environment variable.
-        """
-        if not filename.startswith('/'):
-            filename = os.path.join(os.environ['PWD'], filename)
-            
-        self.dispatch('.uno:SaveAs', ('URL', 'file://%s' % filename), ('FilterName', 'calc8'))
-        
     def shift(self, col, row):
-        """Moves the selector horizontally by a cell number given by "col" parameter and vertically
+        """
+        Moves the selector horizontally by a cell number given by "col" parameter and vertically
         by "row". Parameters can be negative to determine the direction of shift. Used internally
         by shift_right, shift_left, shift_up and shift_down methods.
         """
@@ -604,7 +651,8 @@ class OOSheet(OODoc):
         return cell.getValue() == 0 and cell.getString() == '' and cell.getFormula() == ''
         
     def shift_until(self, col, row, *args, **kwargs):
-        """Moves the selector in direction given by "col" and "row" parameters, until a condition is satisfied.
+        """
+        Moves the selector in direction given by "col" and "row" parameters, until a condition is satisfied.
 
         If selector is a single cell, than a value can be given as parameter and shift will be done until
         that exact value is found.
@@ -685,7 +733,8 @@ class OOSheet(OODoc):
         return self.shift_until(0, -1, *args, **kwargs)
 
     def grow(self, col, row):
-        """Expands the selector by sizes given by "col" and "row" parameter.
+        """
+        Expands the selector by sizes given by "col" and "row" parameter.
         If col is a positive number, columns will be added to right, if negative to left. Same for row.
         """        
         if col < 0:
@@ -713,7 +762,8 @@ class OOSheet(OODoc):
         return self.grow(0, num)
 
     def grow_until(self, col, row, *args, **kwargs):
-        """Grows the selection in direction given by "col" and "row" parameters, until a condition is satisfied.
+        """
+        Grows the selection in direction given by "col" and "row" parameters, until a condition is satisfied.
         Conditions are same as shift_until().
         """
         other = self.clone().shift_until(col, row, *args, **kwargs)
@@ -783,13 +833,15 @@ class OOSheet(OODoc):
         return self
 
     def clone(self):
-        """Returns a clone of this selector.
+        """
+        Returns a clone of this selector.
         Useful to preserve a state before calls that modify the selector.
         """
         return OOSheet(self.selector)
 
     def protect_sheet(self, password = ""):
-        """Protects selection's sheet against editions. When sheet is protected, only unprotected
+        """
+        Protects selection's sheet against editions. When sheet is protected, only unprotected
         cells can be modified.
         Password ensures sheet can only be unprotected with same password.
         """
@@ -797,7 +849,8 @@ class OOSheet(OODoc):
         return self
 
     def unprotect_sheet(self, password = ""):
-        """Unprotects selection's sheet against editions. When sheet is unprotected, all cells
+        """
+        Unprotects selection's sheet against editions. When sheet is unprotected, all cells
         can be modified.
         Needs password if sheet has been protected with password.
         """
@@ -807,34 +860,35 @@ class OOSheet(OODoc):
     def protect(self):
         """Protects selection's cells against edition. Only in effect when sheet is protected"""
         self.focus()
-        self.dispatch('.uno:Protection', ('Protection.Locked', True))
+        self.dispatch('Protection', ('Protection.Locked', True))
         return self
     
     def unprotect(self):
         """Unprotects selections's cell against edition."""
         self.focus()
-        self.dispatch('.uno:Protection', ('Protection.Locked', False))
+        self.dispatch('Protection', ('Protection.Locked', False))
         return self
     
     def quit(self):
         """Closes the OpenOffice.org instance"""
-        self.dispatch('.uno:Quit')
+        self.dispatch('Quit')
 
 
 class OOPacker():
-    """This class manipulates a document in OpenDocument format (the one used by OpenOffice.org)
+    """
+    This class manipulates a document in OpenDocument format (the one used by OpenOffice.org)
     to pack python scripts inside it. This is necessary because OpenOffice.org does not offer a way to
     edit Python scripts.
     """
-    def __init__(self, ods, script):
-        """"ods" and "script" parameters are strings containing the filename of the OpenDocument document and
-        Python script, respectively.
-        For now, expects the document to have .ods format.
+    def __init__(self, document_path, script_path):
         """
-        self.ods = zipfile.ZipFile(ods, 'a')
-        self.script = script
+        "document_path" and "script" parameters are strings containing the filename of the OpenDocument
+        document and Python script, respectively.
+        """
+        self.doc = zipfile.ZipFile(document_path, 'a')
+        self.script = script_path
 
-        assert os.path.exists(script)
+        assert os.path.exists(script_path)
 
     @property
     def script_name(self):
@@ -842,11 +896,12 @@ class OOPacker():
         return self.script.rpartition('/')[2]
 
     def manifest_add(self, path):
-        """Parses the META-INF/manifest.xml file inside the document and adds lines to include the
+        """
+        Parses the META-INF/manifest.xml file inside the document and adds lines to include the
         Python script.
         """        
         manifest = []
-        for line in self.ods.open('META-INF/manifest.xml'):
+        for line in self.doc.open('META-INF/manifest.xml'):
             if '</manifest:manifest>' in line:
                 manifest.append(' <manifest:file-entry manifest:media-type="application/binary" manifest:full-path="%s"/>' % path)
             elif ('full-path:"%s"' % path) in line:
@@ -854,18 +909,18 @@ class OOPacker():
             
             manifest.append(line)
 
-        self.ods.writestr('META-INF/manifest.xml', ''.join(manifest))
+        self.doc.writestr('META-INF/manifest.xml', ''.join(manifest))
         
 
     def pack(self):
         """Packs the Python script inside the document"""
-        self.ods.write(self.script, 'Scripts/python/%s' % self.script_name)
+        self.doc.write(self.script, 'Scripts/python/%s' % self.script_name)
         
         self.manifest_add('Scripts/')
         self.manifest_add('Scripts/python/')
         self.manifest_add('Scripts/python/%s' % self.script_name)
 
-        self.ods.close()
+        self.doc.close()
 
 def pack():
     """Command line to pack the script in a document. Acessed as "oosheet-pack"."""
@@ -888,6 +943,6 @@ def pack():
 def print_help():
     """Prints help message for pack()"""
     script_name = sys.argv[0].split('/')[-1]
-    print "Usage: %s document.ods script.py" % script_name
+    print "Usage: %s document script.py" % script_name
     sys.exit(1)
 

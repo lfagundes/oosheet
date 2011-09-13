@@ -57,7 +57,8 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   using-oosheet
+   using-oosheet-with-spreadsheets
+   working-with-any-document-type
    macros
 
 .. _oosheet-api:
