@@ -94,9 +94,10 @@ Luc Jean sent patch that allows OOSheet to run on Windows Vista with default Pyt
 Changelog
 =========
 
-- ??
+- 1.0
 
   - [NEW] Iterators for cells, rows and columns
+  - [MOD] Refactor for working with all types of documents
 
 - 0.9.7
 
