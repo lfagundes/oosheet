@@ -22,7 +22,7 @@ if sys.platform == 'win32':
         paths += install_folder + path
     os.environ['PATH'] =  paths+ os.environ['PATH']
 
-import uno, re, zipfile, types
+import uno, re, zipfile, types, inspect
 from datetime import datetime, timedelta
 
 # http://codesnippets.services.openoffice.org/Office/Office.MessageBoxWithTheUNOBasedToolkit.snip
@@ -35,8 +35,19 @@ class OODoc(object):
     Interacts with any OpenOffice.org instance, not necessarily a Spreadsheet.
     This is the actual wrapper around python-uno.
     """
-    @property
-    def model(self):
+
+    def __init__(self):
+        self.macro_environment = self._detect_macro_environment()
+        self.model = self.get_model()
+        self.dispatcher = self.get_dispatcher()
+        
+    def _detect_macro_environment(self):
+        for layer in inspect.stack():
+            if layer[1].startswith('vnd.sun.star.tdoc:'):
+                return True
+        return False
+    
+    def get_model(self):
         """
         Desktop's current component, a pyuno object of type com.sun.star.lang.XComponent.
         From this the document data can be manipulated.
@@ -49,7 +60,7 @@ class OODoc(object):
         
         """
         localContext = uno.getComponentContext()
-        if sys.modules.get('pythonscript'):
+        if self.macro_environment:
             # We're inside openoffice macro
             ctx = localContext
         else:
@@ -62,8 +73,7 @@ class OODoc(object):
             
         return desktop.getCurrentComponent()
 
-    @property
-    def dispatcher(self):
+    def get_dispatcher(self):
         """
         A python-uno dispatcher object, of type com.sun.star.uno.XInterface
         From this user events can be simulated.
@@ -76,7 +86,7 @@ class OODoc(object):
         The current environment is detected to decide to connect either via socket or directly.
         """
         localContext = uno.getComponentContext()
-        if sys.modules.get('pythonscript'):
+        if self.macro_environment:
             ctx = localContext
         else:
             resolver = localContext.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", localContext)
@@ -202,6 +212,7 @@ class OOSheet(OODoc):
 
         Selector is case-insensitive
         """
+        super(OOSheet, self).__init__()
 
         if not selector:
             address = self.model.CurrentSelection.RangeAddress
