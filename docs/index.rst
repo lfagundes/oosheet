@@ -94,6 +94,10 @@ Luc Jean sent patch that allows OOSheet to run on Windows Vista with default Pyt
 Changelog
 =========
 
+- 1.1
+
+  - [NEW] find() methods searches selection for matching cells
+
 - 1.0
 
   - [NEW] Iterators for cells, rows and columns

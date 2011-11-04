@@ -635,6 +635,21 @@ class OOSheet(OODoc):
             assert self.height == tup.height
             return (self.start_col - tup.start_col, self.start_row - tup.start_row)
 
+    def find(self, query):
+        if isinstance(query, str) or isinstance(query, unicode):
+            test = lambda(cell): cell.string == query
+        elif isinstance(query, int) or isinstance(query, float):
+            test = lambda(cell): cell.value == query
+        elif type(query) is types.FunctionType:
+            test = query
+        else:
+            raise TypeError
+
+        for cell in self.cells:
+            if test(cell):
+                yield cell
+            
+
     def shift_right(self, num = 1):
         """Moves the selector to right, but number of columns given by "num" parameter."""
         return self.shift(num, 0)
