@@ -17,7 +17,6 @@ run as macro.
 """
 
 def clear():
-    S('a1').unprotect_sheet()
     S('a1:z100').delete()
 
 def test_column_name_vs_index_conversion():
@@ -587,7 +586,6 @@ def test_flatten_works_with_zero_formatted_as_string():
     S('a1').flatten()
     assert S('a3').string == string    
     
-
 def test_protection():
     S('a1').unprotect()
     S('a2').protect()
@@ -636,6 +634,7 @@ def test_protection_can_be_cascaded():
 
     S('b1').unprotect()
     S('a1').protect_sheet().protect().shift_right().set_value(3)
+    S('a1').unprotect_sheet().unprotect()
     assert S('b1').value == 3
 
 def test_sheet_protection_supports_password():
@@ -650,7 +649,11 @@ def test_sheet_protection_supports_password():
     S('a1').set_value(20).drag_to('a3')
     assert S('a2').value == 11
 
-    S('a2').unprotect_sheet()
+    try:
+        S('a2').unprotect_sheet()
+    except:
+        pass
+    
     S('a1').set_value(30).drag_to('a3')
     assert S('a2').value == 11
     
