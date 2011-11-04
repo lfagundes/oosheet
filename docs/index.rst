@@ -96,6 +96,7 @@ Changelog
 
 - 1.1
 
+  - [NEW] support for LibreOffice
   - [NEW] find() methods searches selection for matching cells
 
 - 1.0
