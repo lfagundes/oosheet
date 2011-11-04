@@ -797,3 +797,37 @@ def test_dispatch():
     
         OODoc().dispatch('AutomaticCalculation', True)
 
+def test_find():
+    vals = 'there are several cells with single words in it'.split()
+    for i, cell in enumerate(S('a1:d8').cells):
+        cell.string = vals[i%len(vals)]
+
+    result = S('a1:g10').find('words')
+    result = [ cell for cell in S('a1:g10').find('words') ]
+
+    assert len(result) == 3
+    assert str(result[0]).endswith('.A7')
+    assert str(result[1]).endswith('.B8')
+    assert str(result[2]).endswith('.D1')
+
+
+def test_find_accepts_function_as_query():
+    vals = 'there are several cells with single words in it'.split()
+    for i, cell in enumerate(S('a1:d8').cells):
+        cell.string = vals[i%len(vals)]
+
+    result = [ cell for cell in S('a1:g10').find(lambda c: 'l' in c.string) ]
+
+    assert len(result) == 11
+    assert str(result[0]).endswith('.A3')
+    assert str(result[1]).endswith('.A4')
+    assert str(result[2]).endswith('.A6')
+    assert str(result[3]).endswith('.B4')
+    assert str(result[4]).endswith('.B5')
+    assert str(result[5]).endswith('.B7')
+    assert str(result[6]).endswith('.C5')
+    assert str(result[7]).endswith('.C6')
+    assert str(result[8]).endswith('.C8')
+    assert str(result[9]).endswith('.D6')
+    assert str(result[10]).endswith('.D7')
+

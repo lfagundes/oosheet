@@ -142,6 +142,24 @@ You can also iterate over rows or columns:
     >>>     print "This loop will be iterated twice"
 
 
+Finding Cells
+=============
+
+A selection can be searched for cells matching some criteria:
+
+    >>> S('a1:g10').find(lambda cell: cell.string.startswith(u'...'))
+
+The find() method returns an iterator:
+
+    >>> for cell in S('a1:g10').find(u'word'):
+    >>>    # do something with cell
+
+You can also pass a string, integer or float as parameter. Internally, it will be converted to a lambda
+function depending on type:
+
+    >>> S('a1:g10').find(u'word') # same as find(lambda cell: cell.string == u'word')
+    >>> S('a1:g10').find(17)      # same as find(lambda cell: cell.value == 17)
+
 Simulating user events
 ======================
 
