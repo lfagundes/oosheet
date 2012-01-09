@@ -40,9 +40,9 @@ class OOCalcLauncher(object):
         assert not self.running
 
         if path is None:
-            os.system('oocalc -accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager"')
+            os.system('libreoffice -calc -accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager"')
         else:
-            os.system('oocalc %s' % path)
+            os.system('libreoffice -calc %s' % path)
                       
         now = time.time()
         while time.time() < now + self.TIMEOUT:
