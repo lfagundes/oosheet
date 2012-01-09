@@ -834,3 +834,20 @@ def test_find_accepts_function_as_query():
     assert str(result[9]).endswith('.D6')
     assert str(result[10]).endswith('.D7')
 
+def test_each():
+    S('a1:a10').each(lambda cell: cell.set_string('%s-' % str(cell)))
+
+    assert S('a1').string.endswith('.A1-')
+    assert S('a2').string.endswith('.A2-')
+    assert S('a10').string.endswith('.A10-')
+
+def test_indexing():
+    S('a1:d4').each(lambda cell: cell.set_string('%s' % str(cell)))
+
+    assert S('b2:g10')[0][0].string.endswith('.B2')
+    assert S('b2:g10')[1][0].string.endswith('.B3')
+    assert S('b2:g10')[0][1].string.endswith('.C2')
+
+    assert S('b2:b9')[2].string.endswith('.B4')
+    assert S('b2:g2')[2].string.endswith('.D2')
+

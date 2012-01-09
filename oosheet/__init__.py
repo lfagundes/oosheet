@@ -288,6 +288,17 @@ class OOSheet(OODoc):
         # alias for cells property
         return self.cells
     
+    def __getitem__(self, key):
+        if self.start_row < self.end_row:
+            row = self.start_row + key
+            assert row <= self.end_row # is this good?
+            return OOSheet(self._generate_selector(self.start_col, self.end_col, row, row))
+
+        row = self.start_row
+        col = self.start_col + key
+        assert col <= self.end_col
+        return OOSheet(self._generate_selector(col, col, row, row))
+
     @property
     def cells(self):
         """
@@ -648,7 +659,12 @@ class OOSheet(OODoc):
         for cell in self.cells:
             if test(cell):
                 yield cell
-            
+
+    def each(self, function):
+        if type(function) is not types.FunctionType:
+            raise TypeError
+        for cell in self.cells:
+            function(cell)            
 
     def shift_right(self, num = 1):
         """Moves the selector to right, but number of columns given by "num" parameter."""
