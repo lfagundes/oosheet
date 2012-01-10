@@ -36,10 +36,18 @@ class OODoc(object):
     This is the actual wrapper around python-uno.
     """
 
+    _cached_model = None
+    _cached_dispatcher = None
+
     def __init__(self):
         self.macro_environment = self._detect_macro_environment()
-        self.model = self.get_model()
-        self.dispatcher = self.get_dispatcher()
+        if not self.__class__._cached_model:
+            self.__class__._cached_model = self.get_model()
+        if not self.__class__._cached_dispatcher:
+            self.__class__._cached_dispatcher = self.get_dispatcher()
+
+        self.model = self.__class__._cached_model
+        self.dispatcher = self.__class__._cached_dispatcher
         
     def _detect_macro_environment(self):
         for layer in inspect.stack():
