@@ -289,6 +289,11 @@ class OOSheet(OODoc):
         return self.cells
     
     def __getitem__(self, key):
+        if isinstance(key, str):
+            col = self._col_index(key)
+            assert self.start_col <= col <= self.end_col # is this good?
+            return OOSheet(self._generate_selector(col, col, self.start_row, self.end_row))
+
         if self.start_row < self.end_row:
             row = self.start_row + key
             assert row <= self.end_row # is this good?
@@ -296,7 +301,7 @@ class OOSheet(OODoc):
 
         row = self.start_row
         col = self.start_col + key
-        assert col <= self.end_col
+        assert col <= self.end_col # is this good?
         return OOSheet(self._generate_selector(col, col, row, row))
 
     @property

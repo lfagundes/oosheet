@@ -851,3 +851,8 @@ def test_indexing():
     assert S('b2:b9')[2].string.endswith('.B4')
     assert S('b2:g2')[2].string.endswith('.D2')
 
+def test_keys():
+    S('a1:d4').each(lambda cell: cell.set_string('%s' % str(cell)))
+
+    assert S('b2:g10')['C'][1].string.endswith('.C3')
+    assert S('b2:g10')[1]['D'].string.endswith('.D3')
