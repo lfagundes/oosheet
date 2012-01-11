@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import sys, os
+import sys, os, time
 
 if sys.platform == 'win32':
     #This is required in order to make pyuno usable with the default python interpreter under windows
@@ -36,25 +36,47 @@ class OODoc(object):
     This is the actual wrapper around python-uno.
     """
 
-    _cached_model = None
-    _cached_dispatcher = None
+    _macro_environment = None
+    _context = None
+    _model = None
+    _dispatcher = None
+    _cached = False
 
     def __init__(self):
-        self.macro_environment = self._detect_macro_environment()
-        if not self.__class__._cached_model:
-            self.__class__._cached_model = self.get_model()
-        if not self.__class__._cached_dispatcher:
-            self.__class__._cached_dispatcher = self.get_dispatcher()
+        if not OODoc._dispatcher:
+            self.connect()
+        else:
+            self.load_cache()
+                
+    def connect(self):
+        start = time.time()
+        OODoc._macro_environment = self.macro_environment = self._detect_macro_environment()
+        OODoc._context = self.context = self.get_context()
+        OODoc._model = self.model = self.get_model()
+        OODoc._dispatcher = self.dispatcher = self.get_dispatcher()
 
-        self.model = self.__class__._cached_model
-        self.dispatcher = self.__class__._cached_dispatcher
-        
+    def load_cache(self):
+        self.macro_environment = OODoc._macro_environment
+        self.context = OODoc._context
+        self.model = OODoc._model
+        self.dispatcher = OODoc._dispatcher
+
     def _detect_macro_environment(self):
         for layer in inspect.stack():
             if layer[1].startswith('vnd.sun.star.tdoc:'):
                 return True
         return False
     
+    def get_context(self):
+        localContext = uno.getComponentContext()
+        if self.macro_environment:
+            # We're inside openoffice macro
+            return localContext
+        else:
+            # We have to connect by socket
+            resolver = localContext.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", localContext)
+            return resolver.resolve( "uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext" )
+        
     def get_model(self):
         """
         Desktop's current component, a pyuno object of type com.sun.star.lang.XComponent.
@@ -67,18 +89,8 @@ class OODoc(object):
         The current environment is detected to decide to connect either via socket or directly.
         
         """
-        localContext = uno.getComponentContext()
-        if self.macro_environment:
-            # We're inside openoffice macro
-            ctx = localContext
-        else:
-            # We have to connect by socket
-            resolver = localContext.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", localContext)
-            ctx = resolver.resolve( "uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext" )
-            
-        smgr = ctx.ServiceManager
-        desktop = smgr.createInstanceWithContext( "com.sun.star.frame.Desktop",ctx)
-            
+        smgr = self.context.ServiceManager
+        desktop = smgr.createInstanceWithContext( "com.sun.star.frame.Desktop", self.context)
         return desktop.getCurrentComponent()
 
     def get_dispatcher(self):
@@ -93,15 +105,8 @@ class OODoc(object):
         
         The current environment is detected to decide to connect either via socket or directly.
         """
-        localContext = uno.getComponentContext()
-        if self.macro_environment:
-            ctx = localContext
-        else:
-            resolver = localContext.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", localContext)
-            ctx = resolver.resolve( "uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext" )
-
-        smgr = ctx.ServiceManager
-        return smgr.createInstanceWithContext( "com.sun.star.frame.DispatchHelper", ctx)
+        smgr = self.context.ServiceManager
+        return smgr.createInstanceWithContext( "com.sun.star.frame.DispatchHelper", self.context)
 
     def args(self, name, *args):
         """
@@ -221,7 +226,7 @@ class OOSheet(OODoc):
         Selector is case-insensitive
         """
         super(OOSheet, self).__init__()
-
+        
         if not selector:
             address = self.model.CurrentSelection.RangeAddress
             self.sheet = self.model.Sheets.getByIndex(address.Sheet)
