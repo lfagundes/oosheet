@@ -68,15 +68,15 @@ def test_date():
     assert '/' in S('a1').string
 
 def test_date_only_sets_format_if_not_already_in_date_format():
-
     S().sheet.getCellRangeByName('Sheet1.A1').NumberFormat = 30
     S().sheet.getCellRangeByName('Sheet1.A2').NumberFormat = 38
 
     S('a1:a3').date = datetime(2011, 02, 20)
 
     # Check if formats have been preserved
-    assert S('a1').string == '2/20/11'
-    assert S('a2').string == 'Sunday, February 20, 2011'
+    # lfagundes's environment is pt_BR, so let's check either format
+    assert S('a1').string in ('2/20/11', '20/02/11') 
+    assert S('a2').string in (u'Sunday, February 20, 2011', u'Domingo, 20 de Fevereiro de 2011')
 
     # Now format must have been set
     assert '/' in S('a3').string
@@ -674,13 +674,14 @@ def test_user_selection():
 def test_format_as():
     S().sheet.getCellRangeByName('Sheet1.A1').NumberFormat = 38
     S('a1').date = datetime(2011, 03, 1)
-    S('a2:3').date = datetime(2011, 03, 2)
+    S('a2:3').date = datetime(2011, 03, 8)
 
+    weekday = S('a1').string.split()[0] #probably "wednesday", but might be localized
     S('a2').format_as('a1')
-    assert S('a2').string == 'Wednesday, March 02, 2011'
+    assert S('a2').string.split()[0] == weekday
 
     S('a3').format_as(S('a1'))
-    assert S('a3').string == 'Wednesday, March 02, 2011'
+    assert S('a3').string.split()[0] == weekday
 
 def test_data_array():
     S('a1').value = 1
