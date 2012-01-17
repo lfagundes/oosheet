@@ -87,7 +87,8 @@ def tests():
     return tests
             
 def run_tests(event = None):
-    ok = True
+    ok = 0
+    errors = 0
     for i, test in enumerate(tests()):
         try:
             dev = test.dev
@@ -113,8 +114,9 @@ def run_tests(event = None):
                     S('Tests.c%d' % (i+10)).string = 'OK'
                 else:
                     print 'OK'
+                ok += 1
             except Exception, e:
-                ok = False
+                errors += 1
                 if event:
                     S('Tests.d%d' % (i+10)).string = e
                 else:
@@ -122,6 +124,11 @@ def run_tests(event = None):
 
     if event:
         S('Tests.a1').focus()
+    else:
+        if not errors:
+            print "Passed %d of %d tests" % (ok, ok)
+        else:
+            print "Passed %d of %d tests (%d errors)" % (ok, ok+errors, errors)
 
     return ok
             
