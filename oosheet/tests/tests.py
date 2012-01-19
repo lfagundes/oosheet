@@ -898,10 +898,5 @@ def test_slicing_after_modifications():
 def test_import_letter():
     from oosheet.columns import A, B, C, Z, AA, AF, ABCDEF
 
-    assert A == 0
-    assert B == 1
-    assert C == 2 
-    assert Z == 25
-    assert AA == 26
-    assert AF == 31
-    assert ABCDEF == 12850895
+    assert S('a1:g10')[C] == S('c1:c10')
+    assert S('a1:g10')[A:C] == S('a1:c10')

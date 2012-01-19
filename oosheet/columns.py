@@ -36,7 +36,7 @@ class Wrapper(object):
         except AttributeError:
             if not name == name.upper():
                 raise ImportError
-            return index(name)
+            return name
 
 sys.modules[__name__] = Wrapper(sys.modules[__name__])
             
