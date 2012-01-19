@@ -213,7 +213,7 @@ class OOSheet(OODoc):
     This high-level library works with a group of cells defined by a selector.
     """
 
-    def __init__(self, selector = None):
+    def __init__(self, selector = None, _row_sliced = False):
         """
         Constructor gets a selector as parameter. Selector can be one of the following forms:
         a10
@@ -257,6 +257,8 @@ class OOSheet(OODoc):
             col, row = self._position(cells)
             self.start_col, self.end_col = col, col
             self.start_row, self.end_row = row, row
+
+        self._row_sliced = _row_sliced
 
     @property
     def selector(self):
@@ -302,20 +304,34 @@ class OOSheet(OODoc):
         return self.cells
     
     def __getitem__(self, key):
-        if isinstance(key, str):
-            col = self._col_index(key)
-            assert self.start_col <= col <= self.end_col # is this good?
-            return OOSheet(self._generate_selector(col, col, self.start_row, self.end_row))
+        if isinstance(key, slice):
+            start = key.start
+            stop = key.stop
+        else:
+            start = key
+            stop = key
 
-        if self.start_row < self.end_row:
-            row = self.start_row + key
-            assert row <= self.end_row # is this good?
-            return OOSheet(self._generate_selector(self.start_col, self.end_col, row, row))
+        row_sliced = self._row_sliced
 
-        row = self.start_row
-        col = self.start_col + key
-        assert col <= self.end_col # is this good?
-        return OOSheet(self._generate_selector(col, col, row, row))
+        if isinstance(start, str):
+            start = self._col_index(start) - self.start_col
+            row_sliced = True
+        if isinstance(stop, str):
+            stop = self._col_index(stop) - self.start_col
+            row_sliced = True
+
+        if not row_sliced:
+            return OOSheet(self._generate_selector(self.start_col,
+                                                   self.end_col,
+                                                   self.start_row + start,
+                                                   self.start_row + stop),
+                           _row_sliced = True)
+        else:
+            return OOSheet(self._generate_selector(self.start_col + start,
+                                                   self.start_col + stop,
+                                                   self.start_row,
+                                                   self.end_row))
+
 
     def __cmp__(self, peer):
         return (cmp(self.sheet.Name, peer.sheet.Name) or
@@ -343,7 +359,8 @@ class OOSheet(OODoc):
         single-cell OOSheet object        
         """
         for row in range(self.start_row, self.end_row+1):
-            yield OOSheet(self._generate_selector(self.start_col, self.end_col, row, row))
+            yield OOSheet(self._generate_selector(self.start_col, self.end_col, row, row),
+                          _row_sliced = True)
 
     @property
     def columns(self):

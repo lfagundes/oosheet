@@ -81,6 +81,11 @@ def test_date_only_sets_format_if_not_already_in_date_format():
     # Now format must have been set
     assert '/' in S('a3').string
 
+def test_equals():
+    assert S('a1:g10') == S('a1:g10')
+    assert S('A1:G10') == S('a1:g10')
+    assert S('A1:10') == S('a1:a10')
+
 def test_data_of_multiple_cells_can_be_changed():
     S('a1:g10').value = 5
     assert S('d5').value == 5
@@ -848,14 +853,48 @@ def test_indexing():
     assert S('b2:g10')[0][1] == S('C2')
 
     assert S('b2:b9')[2] == S('B4')
-    assert S('b2:g2')[2] == S('D2')
 
 def test_keys():
     assert S('b2:g10')['C'][1] == S('c3')
     assert S('b2:g10')[1]['D'] == S('d3')
 
-def test_equals():
-    assert S('a1:g10') == S('a1:g10')
-    assert S('A1:G10') == S('a1:g10')
-    assert S('A1:10') == S('a1:a10')
+def test_slicing_for_rows():
+    assert S('a1:g10')[2:4] == S('a3:g5')
+
+def test_slicing_for_cols():
+    assert S('a1:g10')[1][2:4] == S('c2:e2')
+
+def test_slicing_combined():
+    assert S('a1:g10')[1:3][2:4] == S('c2:e4')
+
+def test_slicing_by_letters():
+    assert S('a1:g10')[1]['C':'E'] == S('c2:e2')
+    assert S('a1:g10')[1:2]['C':'E'] == S('c2:e3')
+    
+    # weird but acceptable
+    assert S('a1:g10')[1]['C':4] == S('c2:e2')
+    assert S('a1:g10')[1:2][2:'E'] == S('c2:e3')
+
+def test_rows_will_be_sliced_by_column():
+    rows = [ row for row in S('a1:g10').rows ]
+    row = rows[1] # note that rows is a common list, so this is not OOSheet slicing
+    assert row[0] == S('a2')
+    assert row[1:3] == S('b2:d2')
+
+def test_slicing_after_modifications():
+    row = S('b1:g10')[1:2]
+
+    row.grow_right().shrink_right()
+    row.grow_left().shrink_left()
+    row.grow_up().shrink_up()
+    row.grow_down().shrink_down()
+    row.shift_up().shift_down()
+    row.shift_left().shift_right()
+
+    assert row[2] == S('d2:d3')
+    
+
+
+
+
 
