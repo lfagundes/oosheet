@@ -12,6 +12,7 @@ setup(name = 'oosheet',
       entry_points = {
           'console_scripts': [
               'oosheet-pack = oosheet:pack',
+              'oosheet-launch = oosheet:launch',
               ]
           },
       # Why isn't install_requires working?

@@ -1008,3 +1008,11 @@ def print_help():
     print "Usage: %s document script.py" % script_name
     sys.exit(1)
 
+def launch():
+    print """
+# This is just a reminder of the complicated command needed to launch 
+# LibreOffice with proper parameters to be controlled by sockets
+
+  libreoffice -calc -accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager"
+"""
+
