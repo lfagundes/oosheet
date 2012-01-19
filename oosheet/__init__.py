@@ -317,6 +317,15 @@ class OOSheet(OODoc):
         assert col <= self.end_col # is this good?
         return OOSheet(self._generate_selector(col, col, row, row))
 
+    def __cmp__(self, peer):
+        return (cmp(self.sheet.Name, peer.sheet.Name) or
+                cmp(self.start_row, peer.start_row) or
+                cmp(self.start_col, peer.start_col) or
+                cmp(self.end_row, peer.end_row) or
+                cmp(self.end_col, peer.end_col))
+
+        
+
     @property
     def cells(self):
         """

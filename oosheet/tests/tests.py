@@ -857,3 +857,9 @@ def test_keys():
 
     assert S('b2:g10')['C'][1].string.endswith('.C3')
     assert S('b2:g10')[1]['D'].string.endswith('.D3')
+
+def test_equals():
+    assert S('a1:g10') == S('a1:g10')
+    assert S('A1:G10') == S('a1:g10')
+    assert S('A1:10') == S('a1:a10')
+
