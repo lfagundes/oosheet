@@ -198,10 +198,10 @@ def test_delete():
     assert S('b2').string == ''
 
 def test_last_rows_and_columns():
-    assert S('a1:g10').first_row.selector.endswith('.A1:G1')
-    assert S('a1:g10').last_row.selector.endswith('.A10:G10')
-    assert S('a1:g10').first_column.selector.endswith('.A1:A10')
-    assert S('a1:g10').last_column.selector.endswith('.G1:G10')
+    assert S('a1:g10').first_row == S('A1:G1')
+    assert S('a1:g10').last_row == S('A10:G10')
+    assert S('a1:g10').first_column == S('A1:A10')
+    assert S('a1:g10').last_column == S('G1:G10')
 
 def test_insert_rows():
     S('a1').value = 10
@@ -350,20 +350,20 @@ def test_save_as():
 def test_shift_until_works_for_single_cell_with_value_as_parameter():
     S('g10').string = 'total'
 
-    assert str(S('g1').shift_down_until('total')).endswith('G10')
-    assert str(S('g20').shift_up_until('total')).endswith('G10')
-    assert str(S('a10').shift_right_until('total')).endswith('G10')
-    assert str(S('z10').shift_left_until('total')).endswith('G10')
+    assert S('g1').shift_down_until('total') == S('G10')
+    assert S('g20').shift_up_until('total') == S('G10')
+    assert S('a10').shift_right_until('total') == S('G10')
+    assert S('z10').shift_left_until('total') == S('G10')
 
     S('g10').value = 18
-    assert str(S('g1').shift_down_until(18)).endswith('G10')
+    assert S('g1').shift_down_until(18) == S('G10')
 
     S('g10').value = 18.5
-    assert str(S('g1').shift_down_until(18.5)).endswith('G10')
+    assert S('g1').shift_down_until(18.5) == S('G10')
 
     date = datetime(2011, 1, 20)
     S('g10').date = date
-    assert str(S('g1').shift_down_until(date)).endswith('G10')
+    assert S('g1').shift_down_until(date) == S('G10')
 
 def test_shift_until_works_with_conditions_for_one_dimension_selectors():
     date = datetime(2011, 1, 20)
@@ -374,15 +374,15 @@ def test_shift_until_works_with_conditions_for_one_dimension_selectors():
     S('f13').date = date
     S('c14').value = 20
 
-    assert str(S('a1:z1').shift_down_until(column_c = 'total')).endswith('.A10:Z10')
-    assert str(S('a1:z1').shift_down_until(column_d = 19)).endswith('.A11:Z11')
-    assert str(S('a1:z1').shift_down_until(column_e = 19.5)).endswith('.A12:Z12')
-    assert str(S('a1:z1').shift_down_until(column_f = date)).endswith('.A13:Z13')
-    assert str(S('a1:z1').shift_down_until(column_c = 20)).endswith('.A14:Z14')
+    assert S('a1:z1').shift_down_until(column_c = 'total') == S('A10:Z10')
+    assert S('a1:z1').shift_down_until(column_d = 19) == S('A11:Z11')
+    assert S('a1:z1').shift_down_until(column_e = 19.5) == S('A12:Z12')
+    assert S('a1:z1').shift_down_until(column_f = date) == S('A13:Z13')
+    assert S('a1:z1').shift_down_until(column_c = 20) == S('A14:Z14')
 
-    assert str(S('a30:z30').shift_up_until(column_c = 'total')).endswith('.A10:Z10')
-    assert str(S('a1:a30').shift_right_until(row_11 = 19)).endswith('.D1:D30')
-    assert str(S('z1:z30').shift_left_until(row_12 = 19.5)).endswith('.E1:E30')
+    assert S('a30:z30').shift_up_until(column_c = 'total') == S('A10:Z10')
+    assert S('a1:a30').shift_right_until(row_11 = 19) == S('D1:D30')
+    assert S('z1:z30').shift_left_until(row_12 = 19.5) == S('E1:E30')
 
 def test_shift_until_works_with_conditions_for_two_dimension_selectors():
     date = datetime(2011, 1, 20)
@@ -393,19 +393,19 @@ def test_shift_until_works_with_conditions_for_two_dimension_selectors():
     S('f13').date = date
     S('c14').value = 20
 
-    assert str(S('a1:z2').shift_down_until(column_c = 'total')).endswith('.A9:Z10')
-    assert str(S('a1:z2').shift_down_until(column_d = 19)).endswith('.A10:Z11')
-    assert str(S('a1:z2').shift_down_until(column_e = 19.5)).endswith('.A11:Z12')
-    assert str(S('a1:z2').shift_down_until(column_f = date)).endswith('.A12:Z13')
-    assert str(S('a1:z4').shift_down_until(column_c = 20)).endswith('.A11:Z14')
+    assert S('a1:z2').shift_down_until(column_c = 'total') == S('A9:Z10')
+    assert S('a1:z2').shift_down_until(column_d = 19) == S('A10:Z11')
+    assert S('a1:z2').shift_down_until(column_e = 19.5) == S('A11:Z12')
+    assert S('a1:z2').shift_down_until(column_f = date) == S('A12:Z13')
+    assert S('a1:z4').shift_down_until(column_c = 20) == S('A11:Z14')
 
-    assert str(S('a20:z30').shift_up_until(column_c = 'total')).endswith('.A10:Z20')
-    assert str(S('a1:c30').shift_right_until(row_11 = 19)).endswith('.B1:D30')
-    assert str(S('x1:z30').shift_left_until(row_12 = 19.5)).endswith('.E1:G30')
+    assert S('a20:z30').shift_up_until(column_c = 'total') == S('A10:Z20')
+    assert S('a1:c30').shift_right_until(row_11 = 19) == S('B1:D30')
+    assert S('x1:z30').shift_left_until(row_12 = 19.5) == S('E1:G30')
 
 def test_shift_until_handles_unicode_properly():
     S('c10').string = u'fué'
-    assert str(S('a1:d1').shift_down_until(column_c = u'fué')).endswith('.A10:D10')
+    assert S('a1:d1').shift_down_until(column_c = u'fué') == S('A10:D10')
 
 def test_shift_until_accepts_lambda_to_test_condition():
     S('f10').string = 'some stuff'
@@ -413,21 +413,21 @@ def test_shift_until_accepts_lambda_to_test_condition():
     S('h11').string = 'another string'
     S('h12').string = 'another stuff'
 
-    assert str(S('a1:z1').shift_down_until(column_g_satisfies = lambda c: c.string.endswith('string'))).endswith('.A10:Z10')
-    assert str(S('a1:z2').shift_down_until(column_h_satisfies = lambda c: c.string.startswith('another'))).endswith('.A10:Z11')
-    assert str(S('a1:z2').shift_down_until(column_h_satisfies = lambda c: c.string.endswith('stuff'))).endswith('.A11:Z12')
-    assert str(S('a1:a20').shift_right_until(row_10_satisfies = lambda c: c.string.endswith('string'))).endswith('.G1:G20')
+    assert S('a1:z1').shift_down_until(column_g_satisfies = lambda c: c.string.endswith('string')) == S('A10:Z10')
+    assert S('a1:z2').shift_down_until(column_h_satisfies = lambda c: c.string.startswith('another')) == S('A10:Z11')
+    assert S('a1:z2').shift_down_until(column_h_satisfies = lambda c: c.string.endswith('stuff')) == S('A11:Z12')
+    assert S('a1:a20').shift_right_until(row_10_satisfies = lambda c: c.string.endswith('string')) == S('G1:G20')
 
 def test_shift_until_accepts_none_for_empty_cell():
     S('a1').set_value(1).drag_to('g1').drag_to('g10')
     S('g10').delete()
 
-    assert str(S('b1').shift_right_until(row_1 = None)).endswith('.H1')
-    assert str(S('b1').shift_down_until(column_b = None)).endswith('.B11')
-    assert str(S('b1:5').shift_down_until(column_c = None)).endswith('.B7:B11')
-    assert str(S('b1:5').shift_right_until(row_2 = None)).endswith('.H1:H5')
-    assert str(S('a2:z2').shift_down_until(column_f = None)).endswith('.A11:Z11')
-    assert str(S('a2:z2').shift_down_until(column_g = None)).endswith('.A10:Z10')
+    assert S('b1').shift_right_until(row_1 = None) == S('H1')
+    assert S('b1').shift_down_until(column_b = None) == S('B11')
+    assert S('b1:5').shift_down_until(column_c = None) == S('B7:B11')
+    assert S('b1:5').shift_right_until(row_2 = None) == S('H1:H5')
+    assert S('a2:z2').shift_down_until(column_f = None) == S('A11:Z11')
+    assert S('a2:z2').shift_down_until(column_g = None) == S('A10:Z10')
 
 def test_shift_right():
     S('a1').set_value(1).drag_to('a10').drag_to('f10')
@@ -474,15 +474,15 @@ def test_shifting_works_with_cell_contents():
     assert S('a2').value == 17
 
 def test_shifting_can_be_done_with_arithmetic_operations():
-    assert str(S('a1') + (1, 0)).endswith('.B1')
-    assert str(S('a1') + (0, 1)).endswith('.A2')
-    assert str(S('a1') + (2, 3)).endswith('.C4')
-    assert str(S('a1:b5') + (3, 4)).endswith('.D5:E9')
+    assert S('a1') + (1, 0) == S('B1')
+    assert S('a1') + (0, 1) == S('A2')
+    assert S('a1') + (2, 3) == S('C4')
+    assert S('a1:b5') + (3, 4) == S('D5:E9')
 
-    assert str(S('b1') - (1, 0)).endswith('.A1')
-    assert str(S('a2') - (0, 1)).endswith('.A1')
-    assert str(S('c4') - (2, 3)).endswith('.A1')
-    assert str(S('d5:e9') - (3, 4)).endswith('.A1:B5')
+    assert S('b1') - (1, 0) == S('A1')
+    assert S('a2') - (0, 1) == S('A1')
+    assert S('c4') - (2, 3) == S('A1')
+    assert S('d5:e9') - (3, 4) == S('A1:B5')
 
 def test_difference_between_two_selectors_can_be_calculated_with_subtraction():
     assert S('b4') - S('b3') == (0, 1)
@@ -494,59 +494,59 @@ def test_difference_between_two_selectors_can_be_calculated_with_subtraction():
     assert S('c5:d6') - S('a2:b3') == (2, 3)
 
 def test_selector_can_be_expanded():
-    assert str(S('d4').grow_right()).endswith('.D4:E4')
-    assert str(S('d4').grow_right(2)).endswith('.D4:F4')
-    assert str(S('d4').grow_left()).endswith('.C4:D4')
-    assert str(S('d4').grow_left(2)).endswith('.B4:D4')
-    assert str(S('d4').grow_down()).endswith('.D4:D5')
-    assert str(S('d4').grow_down(2)).endswith('.D4:D6')
-    assert str(S('d4').grow_up()).endswith('.D3:D4')
-    assert str(S('d4').grow_up(2)).endswith('.D2:D4')
+    assert S('d4').grow_right() == S('D4:E4')
+    assert S('d4').grow_right(2) == S('D4:F4')
+    assert S('d4').grow_left() == S('C4:D4')
+    assert S('d4').grow_left(2) == S('B4:D4')
+    assert S('d4').grow_down() == S('D4:D5')
+    assert S('d4').grow_down(2) == S('D4:D6')
+    assert S('d4').grow_up() == S('D3:D4')
+    assert S('d4').grow_up(2) == S('D2:D4')
 
-    assert str(S('d4:e5').grow_right(2).grow_left(2).grow_down(2).grow_up(2)).endswith('.B2:G7')
+    assert S('d4:e5').grow_right(2).grow_left(2).grow_down(2).grow_up(2) == S('B2:G7')
 
 def test_grow_until():
     S('a1').set_value(5).drag_to('a10').drag_to('g10')
 
-    assert S('b3').grow_down_until(column_c = 15).selector.endswith('.B3:B9')
-    assert S('b3').grow_down_until(column_d_satisfies = lambda s: s.value > 14).selector.endswith('.B3:B8')
-    assert S('c4').grow_down_until(column_b = None).selector.endswith('.C4:C11')
-    assert S('b2:d2').grow_down_until(column_a = 11).selector.endswith('.B2:D7')
-    assert S('b2:b3').grow_down_until(column_a = 11).selector.endswith('.B2:B7')
+    assert S('b3').grow_down_until(column_c = 15) == S('B3:B9')
+    assert S('b3').grow_down_until(column_d_satisfies = lambda s: s.value > 14) == S('B3:B8')
+    assert S('c4').grow_down_until(column_b = None) == S('C4:C11')
+    assert S('b2:d2').grow_down_until(column_a = 11) == S('B2:D7')
+    assert S('b2:b3').grow_down_until(column_a = 11) == S('B2:B7')
 
-    assert S('e9').grow_up_until(column_c = 8).selector.endswith('.E2:E9')
-    assert S('e9:f10').grow_up_until(column_a_satisfies = lambda s: s.value < 6).selector.endswith('.E1:F10')
+    assert S('e9').grow_up_until(column_c = 8) == S('E2:E9')
+    assert S('e9:f10').grow_up_until(column_a_satisfies = lambda s: s.value < 6) == S('E1:F10')
 
-    assert S('a3:b4').grow_right_until(row_3_satisfies = lambda s: s.value > 11).selector.endswith('.A3:F4')
+    assert S('a3:b4').grow_right_until(row_3_satisfies = lambda s: s.value > 11) == S('A3:F4')
 
-    assert S('f4:g5').grow_left_until(row_3_satisfies = lambda s:s.value < 9).selector.endswith('.B4:G5')    
+    assert S('f4:g5').grow_left_until(row_3_satisfies = lambda s:s.value < 9) == S('B4:G5')    
 
 def test_shrink_until():
     S('a1').set_value(5).drag_to('a10').drag_to('g10')
 
-    assert S('b2:f9').shrink_down_until(column_f = 13).selector.endswith('.B2:F4')
-    assert S('b2:f9').shrink_up_until(column_e_satisfies = lambda s: s.value > 13).selector.endswith('.B6:F9')
-    assert S('b2:f9').shrink_left_until(row_9 = 16).selector.endswith('.D2:F9')
-    assert S('b2:f9').shrink_right_until(row_9 = 16).selector.endswith('.B2:D9')
+    assert S('b2:f9').shrink_down_until(column_f = 13) == S('B2:F4')
+    assert S('b2:f9').shrink_up_until(column_e_satisfies = lambda s: s.value > 13) == S('B6:F9')
+    assert S('b2:f9').shrink_left_until(row_9 = 16) == S('D2:F9')
+    assert S('b2:f9').shrink_right_until(row_9 = 16) == S('B2:D9')
 
 def test_selector_can_be_reduced():
-    assert str(S('b2:g7').shrink_right()).endswith('.B2:F7')
-    assert str(S('b2:g7').shrink_right(2)).endswith('.B2:E7')
-    assert str(S('b2:g7').shrink_left()).endswith('.C2:G7')
-    assert str(S('b2:g7').shrink_left(2)).endswith('.D2:G7')
-    assert str(S('b2:g7').shrink_down()).endswith('.B2:G6')
-    assert str(S('b2:g7').shrink_down(2)).endswith('.B2:G5')
-    assert str(S('b2:g7').shrink_up()).endswith('.B3:G7')
-    assert str(S('b2:g7').shrink_up(2)).endswith('.B4:G7')
+    assert S('b2:g7').shrink_right() == S('B2:F7')
+    assert S('b2:g7').shrink_right(2) == S('B2:E7')
+    assert S('b2:g7').shrink_left() == S('C2:G7')
+    assert S('b2:g7').shrink_left(2) == S('D2:G7')
+    assert S('b2:g7').shrink_down() == S('B2:G6')
+    assert S('b2:g7').shrink_down(2) == S('B2:G5')
+    assert S('b2:g7').shrink_up() == S('B3:G7')
+    assert S('b2:g7').shrink_up(2) == S('B4:G7')
 
-    assert str(S('B2:G7').shrink_right(2).shrink_left(2).shrink_down(2).shrink_up(2)).endswith('.D4:E5')
+    assert S('B2:G7').shrink_right(2).shrink_left(2).shrink_down(2).shrink_up(2) == S('D4:E5')
 
 def test_object_can_be_cloned():
     start = S('a1')
     end = S('a1').clone().shift_right()
 
-    assert str(start).endswith('.A1')
-    assert str(end).endswith('.B1')
+    assert start == S('a1')
+    assert end == S('b1')
 
 def test_flatten():
     S('a1').value = 5
@@ -810,9 +810,9 @@ def test_find():
     result = [ cell for cell in S('a1:g10').find('words') ]
 
     assert len(result) == 3
-    assert str(result[0]).endswith('.A7')
-    assert str(result[1]).endswith('.B8')
-    assert str(result[2]).endswith('.D1')
+    assert result[0] == S('A7')
+    assert result[1] == S('B8')
+    assert result[2] == S('D1')
 
 
 def test_find_accepts_function_as_query():
@@ -823,17 +823,17 @@ def test_find_accepts_function_as_query():
     result = [ cell for cell in S('a1:g10').find(lambda c: 'l' in c.string) ]
 
     assert len(result) == 11
-    assert str(result[0]).endswith('.A3')
-    assert str(result[1]).endswith('.A4')
-    assert str(result[2]).endswith('.A6')
-    assert str(result[3]).endswith('.B4')
-    assert str(result[4]).endswith('.B5')
-    assert str(result[5]).endswith('.B7')
-    assert str(result[6]).endswith('.C5')
-    assert str(result[7]).endswith('.C6')
-    assert str(result[8]).endswith('.C8')
-    assert str(result[9]).endswith('.D6')
-    assert str(result[10]).endswith('.D7')
+    assert result[0] == S('A3')
+    assert result[1] == S('A4')
+    assert result[2] == S('A6')
+    assert result[3] == S('B4')
+    assert result[4] == S('B5')
+    assert result[5] == S('B7')
+    assert result[6] == S('C5')
+    assert result[7] == S('C6')
+    assert result[8] == S('C8')
+    assert result[9] == S('D6')
+    assert result[10] == S('D7')
 
 def test_each():
     S('a1:a10').each(lambda cell: cell.set_string('%s-' % str(cell)))
@@ -843,20 +843,16 @@ def test_each():
     assert S('a10').string.endswith('.A10-')
 
 def test_indexing():
-    S('a1:d4').each(lambda cell: cell.set_string('%s' % str(cell)))
+    assert S('b2:g10')[0][0] == S('B2')
+    assert S('b2:g10')[1][0] == S('B3')
+    assert S('b2:g10')[0][1] == S('C2')
 
-    assert S('b2:g10')[0][0].string.endswith('.B2')
-    assert S('b2:g10')[1][0].string.endswith('.B3')
-    assert S('b2:g10')[0][1].string.endswith('.C2')
-
-    assert S('b2:b9')[2].string.endswith('.B4')
-    assert S('b2:g2')[2].string.endswith('.D2')
+    assert S('b2:b9')[2] == S('B4')
+    assert S('b2:g2')[2] == S('D2')
 
 def test_keys():
-    S('a1:d4').each(lambda cell: cell.set_string('%s' % str(cell)))
-
-    assert S('b2:g10')['C'][1].string.endswith('.C3')
-    assert S('b2:g10')[1]['D'].string.endswith('.D3')
+    assert S('b2:g10')['C'][1] == S('c3')
+    assert S('b2:g10')[1]['D'] == S('d3')
 
 def test_equals():
     assert S('a1:g10') == S('a1:g10')
