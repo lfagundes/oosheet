@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import sys, os, time
+from columns import name as col_name, index as col_index
 
 if sys.platform == 'win32':
     #This is required in order to make pyuno usable with the default python interpreter under windows
@@ -250,7 +251,7 @@ class OOSheet(OODoc):
             (start, end) = cells.split(':')
             if not re.match('^[A-Z]', end):
                 col, row = self._position(start)
-                end = ''.join([self._col_name(col), end])
+                end = ''.join([col_name(col), end])
             self.start_col, self.start_row = self._position(start)
             self.end_col, self.end_row = self._position(end)
         else:
@@ -273,8 +274,8 @@ class OOSheet(OODoc):
                                        self.start_row, self.end_row)
     
     def _generate_selector(self, start_col, end_col, start_row, end_row):
-        start = '%s%d' % (self._col_name(start_col), start_row + 1)
-        end = '%s%d' % (self._col_name(end_col), end_row + 1)
+        start = '%s%d' % (col_name(start_col), start_row + 1)
+        end = '%s%d' % (col_name(end_col), end_row + 1)
         if start != end:
             return '%s.%s:%s' % (self.sheet.Name, start, end)
         else:
@@ -314,10 +315,10 @@ class OOSheet(OODoc):
         row_sliced = self._row_sliced
 
         if isinstance(start, str):
-            start = self._col_index(start) - self.start_col
+            start = col_index(start) - self.start_col
             row_sliced = True
         if isinstance(stop, str):
-            stop = self._col_index(stop) - self.start_col
+            stop = col_index(stop) - self.start_col
             row_sliced = True
 
         if not row_sliced:
@@ -400,35 +401,10 @@ class OOSheet(OODoc):
         col = re.findall('^([A-Z]+)', descriptor)[0]
         row = descriptor[len(col):]
             
-        col = self._col_index(col)
+        col = col_index(col)
         row = int(row) - 1
 
         return col, row
-
-    def _col_index(self, name):
-        letters = [ l for l in name.upper() ]
-        letters.reverse()
-        index = 0
-        power = 0
-        for letter in letters:
-            index += (1 + ord(letter) - ord('A')) * pow(ord('Z') - ord('A') + 1, power)
-            power += 1
-        return index - 1
-
-    def _col_name(self, index):
-        name = []
-        letters = [ chr(ord('A')+i) for i in range(26) ]
-        
-        while index > 0:
-            i = index % 26
-            index = int(index/26) - 1
-            name.append(letters[i])
-
-        if index == 0:
-            name.append('A')
-
-        name.reverse()
-        return ''.join(name)            
 
     @property
     def basedate(self):
@@ -792,7 +768,7 @@ class OOSheet(OODoc):
                 ref_col = self.start_col
         else:
             assert col == 0
-            ref_col = self._col_index(position)
+            ref_col = col_index(position)
             if row > 0:
                 ref_row = self.end_row
             else:

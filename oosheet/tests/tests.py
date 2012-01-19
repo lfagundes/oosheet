@@ -20,18 +20,20 @@ def clear():
     S('a1:z100').delete()
 
 def test_column_name_vs_index_conversion():
-    assert S()._col_index('A') == 0
-    assert S()._col_index('B') == 1
-    assert S()._col_index('c') == 2 
-    assert S()._col_index('Z') == 25
-    assert S()._col_index('AA') == 26
-    assert S()._col_index('AF') == 31
+    from oosheet.columns import index, name
 
-    assert S()._col_name(0) == 'A'
-    assert S()._col_name(1) == 'B'
-    assert S()._col_name(25) == 'Z'
-    assert S()._col_name(26) == 'AA'
-    assert S()._col_name(31) == 'AF'
+    assert index('A') == 0
+    assert index('B') == 1
+    assert index('c') == 2 
+    assert index('Z') == 25
+    assert index('AA') == 26
+    assert index('AF') == 31
+
+    assert name(0) == 'A'
+    assert name(1) == 'B'
+    assert name(25) == 'Z'
+    assert name(26) == 'AA'
+    assert name(31) == 'AF'
 
 def test_value():
     S('a1').value = 10
@@ -892,9 +894,14 @@ def test_slicing_after_modifications():
     row.shift_left().shift_right()
 
     assert row[2] == S('d2:d3')
-    
 
+def test_import_letter():
+    from oosheet.columns import A, B, C, Z, AA, AF, ABCDEF
 
-
-
-
+    assert A == 0
+    assert B == 1
+    assert C == 2 
+    assert Z == 25
+    assert AA == 26
+    assert AF == 31
+    assert ABCDEF == 12850895
