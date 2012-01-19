@@ -95,13 +95,16 @@ Luc Jean sent patch that allows OOSheet to run on Windows Vista with default Pyt
 Changelog
 =========
 
-- 1.1
+- 1.2
 
   - Much better performance when acessing via sockets
-  - Development now based on LibreOffice instead of OpenOffice.org
   - [NEW] Objects can be accessed as arrays
-  - [NEW] find() methods searches selection for matching cells
   - [NEW] oosheet-launch reminds that complicated launching command line
+
+- 1.1
+
+  - [NEW] support for LibreOffice
+  - [NEW] find() methods searches selection for matching cells
 
 - 1.0
 
