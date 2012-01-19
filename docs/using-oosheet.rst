@@ -1,31 +1,35 @@
 
 .. _using-oosheet:
 
-===============================
-Using OOSheet with Spreadsheets
-===============================
+=============
+Using OOSheet
+=============
 
 Developing with OOSheet
 =======================
 
-There are two ways of using OOSheet. You can either make a python script that manipulates an instance of OpenOffice.org, or you can make python macros that will be executed directly by OO. Macros can be installed in a global path for all users and documents, in user's home directory for a single user or inside a document.
+There are two ways of using OOSheet. You can either make a python script that manipulates an instance of LibreOffice, or you can make python macros that will be executed directly by OO. Macros can be installed in a global path for all users and documents, in user's home directory for a single user or inside a document.
 
 No matter what your choice is, the python code is the same and works in any of those environments. So, it's always best to start your development by manipulating an instance of Openoffice.org, so that you don't have to restart it to test your routines.
 
-You must launch OpenOffice.org Spreadsheet allowing socket connections. To do so, use the following command line (in GNU/Linux)::
+You must launch LibreOffice Spreadsheet allowing socket connections. To do so, use the following command line (in GNU/Linux)::
 
-    $ oocalc -accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager"
+    $ libreoffice -calc -accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager"
+
+Since this command is very complicated to remember, a reminder command is included::
+
+    $ oosheet-launch
+
+=========================
+OOSheet with Spreadsheets
+=========================
 
 Hello world
 ===========
 
-After launching oocalc, in a python shell:
+After launching libreoffice, in a python shell:
 
     >>> from oosheet import OOSheet as S
-    >>> S().alert('Hello world')
-
-This will confirm that everything is properly setup. A second hello world could be:
-
     >>> S('a1').string = 'Hello world'
 
 
@@ -119,13 +123,41 @@ It's also possible to access value of cells as a 2d-tuple:
     >>> S('a1:b3').data_array
     ((2.0, 3.0), (3.0, 4.0), (4.0, 5.0))
 
-Iterators
-=========
+Acessing Cells
+==============
 
-Selections can be iterated:
+A subgroup of cells can be acessed as arrays:
+
+    >>> S('a1:g10')[4]
+    Sheet1.A5:G5
+    >>> S('a1:g10')[4][2]
+    Sheet1.C5
+    >>> S('a1:g10')[4]['F']
+    Sheet1.F5
+    >>> S('a1:g10')[1:2][3:4]
+    Sheet1.D2:E3
+    >>> S('a1:g10')[1:2]['B':'F']
+    Sheet1.B2:F3
+
+As you see, you can access columns either by index number or string. By default, if you first access rows, then columns, but if you access columns using strings, the order does not matter:
+
+    >>> S('a1:g10')[1]['F']
+    Sheet1.F2
+    >>> S('a1:g10')['F'][1]
+    Sheet1.F2
+
+As a convenience, the column strings can be imported as constants from oosheet.columns module, as long as uppercase letters are used:
+
+    >>> from oosheet.columns import C, F
+    >>> S('a1:g10')[C]
+    Sheet1.C1:C10
+    >>> S('a1:g10')[C:F]
+    Sheet1.C1:F10
+
+Selections can also be iterated:
 
     >>> for cell in S('Sheet1.a1:b10'):
-    >>>     print str(cell) # will print something like Sheet1.a3, 
+    >>>     print str(cell) # will print something like Sheet1.A3, 
 
 the example above will iterate over 20 cells, in each iteration cell will hold an OOSheet object
 with one cell. Exactly the same thing can be obtained with:
@@ -198,9 +230,9 @@ Undo, redo, save_as and quit:
     >>> S().undo()
     >>> S().redo()
     >>> S().save_as('/tmp/oosheet_sandbox.ods')
-    >>> S().quit() # this will close OpenOffice.org
+    >>> S().quit() # this will close LibreOffice
 
-Any OpenOffice.org event can be generated, not only the ones above. See :ref:`recording-macros` for instructions on how to discover events.
+Any LibreOffice event can be generated, not only the ones above. See :ref:`recording-macros` for instructions on how to discover events.
 
 Cascading calls
 ===============
@@ -215,6 +247,8 @@ The cascading logic is so that the resulting selection should always be as you e
 
 Moving, growing and shrinking selections
 ========================================
+
+Sometimes you don't know exactly where your group of cells is, but know its position relative to a selector you have. In this situation, the selection modificators are handful. With them, you can move, grow or shrink a selection.
 
 Selectors can be moved. For example:
 
@@ -337,11 +371,3 @@ To protect and unprotect sheets and cells:
     >>> S('Sheet1.a1').protect()
     >>> S('Sheet1.a1').unprotect()
 
-Breakpoint issue
-================
-
-It's worth noticing that *ipdb.set_trace() does not work* when you use OOSheet. This is not an issue from this module, it happens in deeper and darker layers of python-uno. If you see an error like this:
-
-  SystemError: 'pyuno runtime is not initialized, (the pyuno.bootstrap needs to be called before using any uno classes)'
-
-it's probably because you have an ipdb breakpoint. Use *pdb* instead.
