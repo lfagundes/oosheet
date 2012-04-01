@@ -50,7 +50,6 @@ class OODoc(object):
             self.load_cache()
                 
     def connect(self):
-        start = time.time()
         OODoc._macro_environment = self.macro_environment = self._detect_macro_environment()
         OODoc._context = self.context = self.get_context()
         OODoc._model = self.model = self.get_model()
