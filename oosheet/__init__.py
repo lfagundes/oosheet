@@ -215,6 +215,9 @@ class OODoc(object):
         """
         self.dispatch('Open', ('URL', self._file_url(filename)))
 
+    def quit(self):
+        """Closes the OpenOffice.org instance"""
+        self.dispatch('Quit')
 
 class OOSheet(OODoc):
     """
@@ -939,10 +942,6 @@ class OOSheet(OODoc):
         self.dispatch('Protection', ('Protection.Locked', False))
         return self
     
-    def quit(self):
-        """Closes the OpenOffice.org instance"""
-        self.dispatch('Quit')
-
 
 class OOPacker():
     """
