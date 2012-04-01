@@ -95,6 +95,10 @@ Luc Jean sent patch that allows OOSheet to run on Windows Vista with default Pyt
 Changelog
 =========
 
+- 1.2.1
+
+  - Change fetching InstallPath winreg key for LibreOffice 3.4 on Windows 7
+
 - 1.2
 
   - Much better performance when acessing via sockets

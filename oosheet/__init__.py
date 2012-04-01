@@ -9,7 +9,15 @@ if sys.platform == 'win32':
 
     #get the install path from registry
     import _winreg
-    value = _winreg.QueryValue(_winreg.HKEY_LOCAL_MACHINE, 'SOFTWARE\OpenOffice.org\UNO\InstallPath')
+    # try with OpenOffice, LibreOffice on W7
+    for _key in ['SOFTWARE\OpenOffice.org\UNO\InstallPath',             # OpenOffice 3.3
+                 'SOFTWARE\Wow6432Node\LibreOffice\UNO\InstallPath']:   # LibreOffice 3.4.5 on W7
+        try:
+            value = _winreg.QueryValue(_winreg.HKEY_LOCAL_MACHINE, _key)
+        except Exception as detail:
+            _errMess = "%s" % detail
+        else:
+            break   # first existing key will do
     install_folder = '\\'.join(value.split('\\')[:-1]) # 'C:\\Program Files\\OpenOffice.org 3'
 
     #modify the environment variables
@@ -17,9 +25,10 @@ if sys.platform == 'win32':
     os.environ['UNO_PATH'] = install_folder+'\\program\\'
 
     sys.path.append(install_folder+'\\Basis\\program')
+    sys.path.append(install_folder+'\\program')
 
     paths = ''
-    for path in ("\\URE\\bin;", "\\Basis\\program;"):
+    for path in ("\\URE\\bin;", "\\Basis\\program;", "'\\program;"):
         paths += install_folder + path
     os.environ['PATH'] =  paths+ os.environ['PATH']
 
