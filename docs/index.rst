@@ -97,6 +97,7 @@ Changelog
 
 - 1.2.1
 
+  - Correct bug in OOPacker.script_name() for Windows 7
   - Change fetching InstallPath winreg key for LibreOffice 3.4 on Windows 7
 
 - 1.2

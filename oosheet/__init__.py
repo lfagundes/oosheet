@@ -963,7 +963,7 @@ class OOPacker():
     @property
     def script_name(self):
         """Gets the script name, ignoring the path of the file"""
-        return self.script.rpartition('/')[2]
+        return os.path.basename(self.script)
 
     def manifest_add(self, path):
         """
