@@ -57,7 +57,7 @@ class OODoc(object):
             self.connect()
         else:
             self.load_cache()
-                
+
     def connect(self):
         OODoc._macro_environment = self.macro_environment = self._detect_macro_environment()
         OODoc._context = self.context = self.get_context()
@@ -75,7 +75,7 @@ class OODoc(object):
             if layer[1].startswith('vnd.sun.star.tdoc:'):
                 return True
         return False
-    
+
     def get_context(self):
         localContext = uno.getComponentContext()
         if self.macro_environment:
@@ -85,18 +85,18 @@ class OODoc(object):
             # We have to connect by socket
             resolver = localContext.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", localContext)
             return resolver.resolve( "uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext" )
-        
+
     def get_model(self):
         """
         Desktop's current component, a pyuno object of type com.sun.star.lang.XComponent.
         From this the document data can be manipulated.
 
         For example, to manipulate Sheet1.A1 cell through this:
-        
+
         >>> OODoc().model.Sheets.getByIndex(0).getCellByPosition(0, 0)
 
         The current environment is detected to decide to connect either via socket or directly.
-        
+
         """
         smgr = self.context.ServiceManager
         desktop = smgr.createInstanceWithContext( "com.sun.star.frame.Desktop", self.context)
@@ -108,10 +108,10 @@ class OODoc(object):
         From this user events can be simulated.
 
         For example, to focus on Sheet1.A1 through this:
-        
+
         >>> doc = OODoc()
         >>> doc.dispatcher.executeDispatch(doc.model.getCurrentController(), '.uno:GoToCell', '', 0, doc.args(('ToPoint', 'Sheet1.A1')))
-        
+
         The current environment is detected to decide to connect either via socket or directly.
         """
         smgr = self.context.ServiceManager
@@ -132,7 +132,7 @@ class OODoc(object):
             except TypeError:
                 struct.Name = name
                 struct.Value = arg
-                
+
             uno_struct.append(struct)
 
         return tuple(uno_struct)
@@ -145,13 +145,13 @@ class OODoc(object):
         >>> OODoc().dispatch('.uno:GoToCell', ('ToPoint', 'Sheet1.A1'))
 
         The beginning ".uno:" is optional:
-        
+
         >>> OODoc().dispatch('GoToCell', ('ToPoint', 'Sheet1.A1'))
 
         If the event name is a single word, capitalization is unnecessary:
 
         >>> OODoc().dispatch('calculate')
-        
+
         """
 
         if cmd.startswith('.uno:'):
@@ -171,17 +171,17 @@ class OODoc(object):
         parentWin = self.model.CurrentController.Frame.ContainerWindow
 
         aDescriptor = WindowDescriptor()
-	aDescriptor.Type = MODALTOP
-	aDescriptor.WindowServiceName = 'messbox'
-	aDescriptor.ParentIndex = -1
-	aDescriptor.Parent = parentWin
-	aDescriptor.WindowAttributes = OK
+        aDescriptor.Type = MODALTOP
+        aDescriptor.WindowServiceName = 'messbox'
+        aDescriptor.ParentIndex = -1
+        aDescriptor.Parent = parentWin
+        aDescriptor.WindowAttributes = OK
 
         tk = parentWin.getToolkit()
         box = tk.createWindow(aDescriptor)
 
         box.setMessageText(msg)
-        
+
         if title:
             box.setCaptionText(title)
 
@@ -200,7 +200,7 @@ class OODoc(object):
             filename = os.path.join(os.environ['PWD'], filename)
 
         return 'file://%s' % filename
-        
+
     def save_as(self, filename):
         """
         Saves the current doc to filename. Expects a string representing a path in filesystem.
@@ -238,7 +238,7 @@ class OOSheet(OODoc):
         Selector is case-insensitive
         """
         super(OOSheet, self).__init__()
-        
+
         if not selector:
             address = self.model.CurrentSelection.RangeAddress
             self.sheet = self.model.Sheets.getByIndex(address.Sheet)
@@ -246,9 +246,9 @@ class OOSheet(OODoc):
             self.end_col = address.EndColumn
             self.start_row = address.StartRow
             self.end_row = address.EndRow
-            
+
             return
-        
+
         try:
             sheet_name, cells = selector.split('.')
             self.sheet = self.model.Sheets.getByName(sheet_name)
@@ -279,11 +279,11 @@ class OOSheet(OODoc):
         Sheet1.A1
         Sheet1.A1:A10
 
-        Column labels will always be uppercase.        
+        Column labels will always be uppercase.
         """
         return self._generate_selector(self.start_col, self.end_col,
                                        self.start_row, self.end_row)
-    
+
     def _generate_selector(self, start_col, end_col, start_row, end_row):
         start = '%s%d' % (col_name(start_col), start_row + 1)
         end = '%s%d' % (col_name(end_col), end_row + 1)
@@ -310,11 +310,11 @@ class OOSheet(OODoc):
         for col in range(self.start_col, self.end_col+1):
             for row in range(self.start_row, self.end_row+1):
                 yield self.sheet.getCellByPosition(col, row)
-        
+
     def __iter__(self):
         # alias for cells property
         return self.cells
-    
+
     def __getitem__(self, key):
         if isinstance(key, slice):
             start = key.start
@@ -352,13 +352,13 @@ class OOSheet(OODoc):
                 cmp(self.end_row, peer.end_row) or
                 cmp(self.end_col, peer.end_col))
 
-        
+
 
     @property
     def cells(self):
         """
         A generator of all cells of this selector. Each cell returned will be a
-        single-cell OOSheet object        
+        single-cell OOSheet object
         """
         for col in range(self.start_col, self.end_col+1):
             for row in range(self.start_row, self.end_row+1):
@@ -368,7 +368,7 @@ class OOSheet(OODoc):
     def rows(self):
         """
         A generator of all cells of this selector. Each cell returned will be a
-        single-cell OOSheet object        
+        single-cell OOSheet object
         """
         for row in range(self.start_row, self.end_row+1):
             yield OOSheet(self._generate_selector(self.start_col, self.end_col, row, row),
@@ -378,12 +378,12 @@ class OOSheet(OODoc):
     def columns(self):
         """
         A generator of all cells of this selector. Each cell returned will be a
-        single-cell OOSheet object        
+        single-cell OOSheet object
         """
         for col in range(self.start_col, self.end_col+1):
             yield OOSheet(self._generate_selector(col, col, self.start_row, self.end_row))
 
-        
+
 
     @property
     def data_array(self):
@@ -392,7 +392,7 @@ class OOSheet(OODoc):
         Uses Uno's getDataArray().
         """
         return self.sheet.getCellRangeByName(self.selector).getDataArray()
-        
+
 
     def __repr__(self):
         try:
@@ -411,7 +411,7 @@ class OOSheet(OODoc):
     def _position(self, descriptor):
         col = re.findall('^([A-Z]+)', descriptor)[0]
         row = descriptor[len(col):]
-            
+
         col = col_index(col)
         row = int(row) - 1
 
@@ -515,7 +515,7 @@ class OOSheet(OODoc):
         if '.' in destiny:
             sheet_name, destiny = destiny.split('.')
             assert sheet_name == self.sheet.Name
-            
+
         self.focus()
         self.dispatch('AutoFill', ('EndCell', '%s.%s' % (self.sheet.Name, destiny)))
 
@@ -581,7 +581,7 @@ class OOSheet(OODoc):
                       ('MoveMode', 4),
                       )
         return self
-        
+
     @property
     def first_row(self):
         return self.clone().shrink_down(self.height - 1)
@@ -594,7 +594,7 @@ class OOSheet(OODoc):
     @property
     def last_column(self):
         return self.clone().shrink_left(self.width - 1)
-    
+
     def copy(self):
         """Focuses and copies the contents, so it can be pasted somewhere else"""
         self.focus()
@@ -627,7 +627,7 @@ class OOSheet(OODoc):
 
         if type(selector) is type(self):
             selector = selector.selector
-            
+
         OOSheet(selector).copy()
         self.focus()
         self.dispatch('InsertContents',
@@ -695,7 +695,7 @@ class OOSheet(OODoc):
         if type(function) is not types.FunctionType:
             raise TypeError
         for cell in self.cells:
-            function(cell)            
+            function(cell)
 
     def shift_right(self, num = 1):
         """Moves the selector to right, but number of columns given by "num" parameter."""
@@ -722,32 +722,32 @@ class OOSheet(OODoc):
 
         # value is None
         return cell.getValue() == 0 and cell.getString() == '' and cell.getFormula() == ''
-        
+
     def shift_until(self, col, row, *args, **kwargs):
         """
         Moves the selector in direction given by "col" and "row" parameters, until a condition is satisfied.
 
         If selector is a single cell, than a value can be given as parameter and shift will be done until
         that exact value is found.
-        
+
         For multiple cells selectors, the parameters can be in one of the following forms:
-        
+
         - column_LABEL = value
         - row_NUMBER = value
         - column_LABEL_satisfies = lambda
         - row_NUMBER_satisfies = lambda
 
         If column is given as condition, then shift must be horizontal, and vice-versa.
-        
+
         If matching against a value, the type of the value given will be checked and either "value", "string"
         or "date" property of cell will be used.
-        
+
         If matching against a lambda function, a single-cell OOSheet object will be given as parameter
         to the lambda function.
         """
-        
+
         assert col != 0 or row != 0
-        
+
         try:
             value = args[0]
             assert self.cell is not None
@@ -790,7 +790,7 @@ class OOSheet(OODoc):
             self.shift(col, row)
             cell.shift(col, row)
 
-        return self            
+        return self
 
     def shift_right_until(self, *args, **kwargs):
         """Moves selector to right until condition is matched. See shift_until()"""
@@ -809,7 +809,7 @@ class OOSheet(OODoc):
         """
         Expands the selector by sizes given by "col" and "row" parameter.
         If col is a positive number, columns will be added to right, if negative to left. Same for row.
-        """        
+        """
         if col < 0:
             self.start_col += col
         else:
@@ -845,7 +845,7 @@ class OOSheet(OODoc):
         self.start_col = min(self.start_col, other.start_col)
         self.end_col = max(self.end_col, other.end_col)
         return self
-        
+
     def grow_right_until(self, *args, **kwargs):
         """Expands selection to right until condition is matched. Conditions are same as shift_until()"""
         return self.grow_until(1, 0, *args, **kwargs)
@@ -935,13 +935,13 @@ class OOSheet(OODoc):
         self.focus()
         self.dispatch('Protection', ('Protection.Locked', True))
         return self
-    
+
     def unprotect(self):
         """Unprotects selections's cell against edition."""
         self.focus()
         self.dispatch('Protection', ('Protection.Locked', False))
         return self
-    
+
 
 class OOPacker():
     """
@@ -968,23 +968,23 @@ class OOPacker():
         """
         Parses the META-INF/manifest.xml file inside the document and adds lines to include the
         Python script.
-        """        
+        """
         manifest = []
         for line in self.doc.open('META-INF/manifest.xml'):
             if '</manifest:manifest>' in line:
                 manifest.append(' <manifest:file-entry manifest:media-type="application/binary" manifest:full-path="%s"/>' % path)
             elif ('full-path:"%s"' % path) in line:
                 return
-            
+
             manifest.append(line)
 
         self.doc.writestr('META-INF/manifest.xml', ''.join(manifest))
-        
+
 
     def pack(self):
         """Packs the Python script inside the document"""
         self.doc.write(self.script, 'Scripts/python/%s' % self.script_name)
-        
+
         self.manifest_add('Scripts/')
         self.manifest_add('Scripts/python/')
         self.manifest_add('Scripts/python/%s' % self.script_name)
@@ -1017,9 +1017,8 @@ def print_help():
 
 def launch():
     print """
-# This is just a reminder of the complicated command needed to launch 
+# This is just a reminder of the complicated command needed to launch
 # LibreOffice with proper parameters to be controlled by sockets
 
   libreoffice -calc -accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager"
 """
-
