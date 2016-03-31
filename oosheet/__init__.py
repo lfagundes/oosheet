@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import sys, os, time
+import sys
+import os
 from columns import name as col_name, index as col_index
 
 if sys.platform == 'win32':
@@ -10,8 +11,10 @@ if sys.platform == 'win32':
     #get the install path from registry
     import _winreg
     # try with OpenOffice, LibreOffice on W7
-    for _key in ['SOFTWARE\OpenOffice.org\UNO\InstallPath',             # OpenOffice 3.3
-                 'SOFTWARE\Wow6432Node\LibreOffice\UNO\InstallPath']:   # LibreOffice 3.4.5 on W7
+    for _key in [# OpenOffice 3.3
+                 "SOFTWARE\\OpenOffice.org\\UNO\\InstallPath",
+                 # LibreOffice 3.4.5 on W7
+                 "SOFTWARE\\Wow6432Node\\LibreOffice\\UNO\\InstallPath"]:
         try:
             value = _winreg.QueryValue(_winreg.HKEY_LOCAL_MACHINE, _key)
         except Exception as detail:
