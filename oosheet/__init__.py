@@ -1012,13 +1012,13 @@ def pack():
 def print_help():
     """Prints help message for pack()"""
     script_name = sys.argv[0].split('/')[-1]
-    print "Usage: %s document script.py" % script_name
+    print("Usage: %s document script.py" % script_name)
     sys.exit(1)
 
 def launch():
-    print """
+    print("""
 # This is just a reminder of the complicated command needed to launch
 # LibreOffice with proper parameters to be controlled by sockets
 
   libreoffice -calc -accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager"
-"""
+""")
