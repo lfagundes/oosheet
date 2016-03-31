@@ -679,9 +679,9 @@ class OOSheet(OODoc):
 
     def find(self, query):
         if isinstance(query, str) or isinstance(query, unicode):
-            test = lambda(cell): cell.string == query
+            test = lambda cell: cell.string == query
         elif isinstance(query, int) or isinstance(query, float):
-            test = lambda(cell): cell.value == query
+            test = lambda cell: cell.value == query
         elif type(query) is types.FunctionType:
             test = query
         else:
