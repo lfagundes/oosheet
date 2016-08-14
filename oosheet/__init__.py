@@ -35,7 +35,7 @@ if sys.platform == 'win32':
         paths += install_folder + path
     os.environ['PATH'] =  paths+ os.environ['PATH']
 
-import uno, re, zipfile, types, inspect
+import uno, re, zipfile, types, inspect, tempfile, shutil, subprocess
 from datetime import datetime, timedelta
 
 # http://codesnippets.services.openoffice.org/Office/Office.MessageBoxWithTheUNOBasedToolkit.snip
@@ -662,18 +662,18 @@ class OOSheet(OODoc):
         return self
 
     def __add__(self, tup):
-        assert type(tup) is types.TupleType
+        assert type(tup) is tuple
         assert len(tup) == 2
-        assert type(tup[0]) in (types.IntType, types.FloatType)
-        assert type(tup[1]) in (types.IntType, types.FloatType)
+        assert type(tup[0]) in (int, float)
+        assert type(tup[1]) in (int, float)
         return self.clone().shift(int(tup[0]), int(tup[1]))
 
     def __sub__(self, tup):
-        assert type(tup) in (types.TupleType, type(self))
-        if type(tup) is types.TupleType:
+        assert type(tup) in (tuple, type(self))
+        if type(tup) is tuple:
             assert len(tup) == 2
-            assert type(tup[0]) in (types.IntType, types.FloatType)
-            assert type(tup[1]) in (types.IntType, types.FloatType)
+            assert type(tup[0]) in (int, float)
+            assert type(tup[1]) in (int, float)
             return self + (-tup[0], -tup[1])
         else:
             assert self.width == tup.width
@@ -714,11 +714,11 @@ class OOSheet(OODoc):
         return self.shift(0, -num)
 
     def _cell_matches(self, cell, value):
-        assert type(value) in (types.NoneType, types.StringType, types.UnicodeType, types.FloatType, types.IntType, datetime)
+        assert type(value) in (type(None), str, float, int, datetime)
 
-        if type(value) in (types.StringType, types.UnicodeType):
+        if type(value) is str:
             return cell.getString() == value
-        if type(value) in (types.FloatType, types.IntType):
+        if type(value) in (float, int):
             return cell.getValue() == value
         if type(value) is datetime:
             return cell.getValue() == (value - self.basedate).days
@@ -761,7 +761,7 @@ class OOSheet(OODoc):
             pass
 
         assert len(kwargs.keys()) == 1
-        ref = kwargs.keys()[0]
+        ref = list(kwargs.keys())[0]
         value = kwargs[ref]
 
         reftype, position = ref.split('_')[:2]
