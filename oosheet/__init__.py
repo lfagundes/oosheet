@@ -952,15 +952,23 @@ class OOPacker():
     to pack python scripts inside it. This is necessary because OpenOffice.org does not offer a way to
     edit Python scripts.
     """
+
     def __init__(self, document_path, script_path):
         """
         "document_path" and "script" parameters are strings containing the filename of the OpenDocument
         document and Python script, respectively.
         """
-        self.doc = zipfile.ZipFile(document_path, 'a')
         self.script = script_path
+        self.document = document_path
+        self.tmp = tempfile.mkdtemp()
 
         assert os.path.exists(script_path)
+
+        doc = zipfile.ZipFile(document_path, 'r')
+        doc.extractall(path=self.tmp)
+
+    def open(self, path, mode='r'):
+        return open(os.path.join(self.tmp, path), mode)
 
     @property
     def script_name(self):
@@ -973,26 +981,36 @@ class OOPacker():
         Python script.
         """
         manifest = []
-        for line in self.doc.open('META-INF/manifest.xml'):
+        for line in self.open('META-INF/manifest.xml'):
             if '</manifest:manifest>' in line:
                 manifest.append(' <manifest:file-entry manifest:media-type="application/binary" manifest:full-path="%s"/>' % path)
-            elif ('full-path:"%s"' % path) in line:
+            elif ('full-path="%s"' % path) in line:
                 return
 
             manifest.append(line)
 
-        self.doc.writestr('META-INF/manifest.xml', ''.join(manifest))
-
+        self.open('META-INF/manifest.xml', 'w').write(''.join(manifest))
 
     def pack(self):
         """Packs the Python script inside the document"""
-        self.doc.write(self.script, 'Scripts/python/%s' % self.script_name)
-
         self.manifest_add('Scripts/')
         self.manifest_add('Scripts/python/')
         self.manifest_add('Scripts/python/%s' % self.script_name)
 
-        self.doc.close()
+        fh = self.open(os.path.join(self.tmp, 'Scripts/python', self.script_name), 'w')
+        fh.write(open(self.script).read())
+        fh.close()
+
+        #Backup
+        open(self.document + '.bak', 'wb').write(open(self.document, 'rb').read())
+
+        os.remove(self.document)
+        subprocess.Popen(['zip', '-0', '-X', self.document, 'mimetype'],
+                         cwd=self.tmp).wait()
+        subprocess.Popen(['zip', self.document, '-r'] + os.listdir(self.tmp) + ['-x', 'mimetype'],
+                         cwd=self.tmp).wait()
+
+        shutil.rmtree(self.tmp)
 
 def pack():
     """Command line to pack the script in a document. Acessed as "oosheet-pack"."""
