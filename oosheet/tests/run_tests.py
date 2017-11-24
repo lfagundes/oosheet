@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 """
 This is a custom test_runner for OOSheet, designed to run same tests both by connecting to
@@ -37,20 +37,20 @@ class OOCalcLauncher(object):
     TIMEOUT = 10
 
     def __init__(self, path = None):
-        assert not self.running
-
-        if path is None:
-            os.system('libreoffice -calc -accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager"')
-        else:
-            os.system('libreoffice -calc %s' % path)
-                      
-        now = time.time()
-        while time.time() < now + self.TIMEOUT:
+        if not path:
+            if not self.running:
+                print("You shoud run libreoffice before running tests:\n")
+                print('  libreoffice --calc --accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager"\n\n')
+                raise Exception('LibreOffice not running')
             try:
                 S().model
-                return
-            except Exception:
-                time.sleep(0.1)
+            except:
+                print("Close Libreoffice and run with following line:\n")
+                print('  libreoffice --calc --accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager"\n\n')
+                raise Exception('LibreOffice not running properly')
+
+        if path is not None and not self.running:
+            os.system('libreoffice --calc %s' % path)
 
     def quit(self):
         filename = '/tmp/%s.ods' % ''.join([ random.choice('abcdefghijklmnopqrstuvwxyz') for i in range(32) ])
@@ -61,8 +61,8 @@ class OOCalcLauncher(object):
     @property
     def pid(self):
         sub = subprocess.Popen('ps aux'.split(), stdout=subprocess.PIPE)
-        sub.wait()
-        processes = [ line for line in sub.stdout if 'soffice' in line ]
+        stdout = sub.communicate()[0].decode('utf-8').split('\n')
+        processes = [ line for line in stdout if 'soffice' in line ]
         try:
             return int(processes[0].split()[1])
         except IndexError:
@@ -76,7 +76,11 @@ class OOCalcLauncher(object):
         
         return self.pid is not None
 
-execfile(tests_file)
+### BLOCK BELOW is substituted by whole code when running tests from libreoffice
+with open(tests_file) as f:
+    code = compile(f.read(), tests_file, 'exec')
+    exec(code)
+###
 
 def tests():
     tests = []
@@ -106,29 +110,29 @@ def run_tests(event = None):
         clear()
         if stop_on_error:
             test.__call__()
-            print 'OK'
+            print('OK')
         else:
             try:
                 test.__call__()
                 if event:
                     S('Tests.c%d' % (i+10)).string = 'OK'
                 else:
-                    print 'OK'
+                    print('OK')
                 ok += 1
-            except Exception, e:
+            except Exception as e:
                 errors += 1
                 if event:
                     S('Tests.d%d' % (i+10)).string = e
                 else:
-                    print '%s: %s' % (type(e).__name__, e)
+                    print('%s: %s' % (type(e).__name__, e))
 
     if event:
         S('Tests.a1').focus()
     else:
         if not errors:
-            print "Passed %d of %d tests" % (ok, ok)
+            print("Passed %d of %d tests" % (ok, ok))
         else:
-            print "Passed %d of %d tests (%d errors)" % (ok, ok+errors, errors)
+            print("Passed %d of %d tests (%d errors)" % (ok, ok+errors, errors))
 
     return ok
             
@@ -139,7 +143,7 @@ if __name__ == '__main__':
         result = run_tests()
     finally:
         time.sleep(0.5)
-        calc.quit()
+        #calc.quit()
 
     if result:
         testmodel = os.path.join(os.path.dirname(__file__), 'testing_sheet.ods')
@@ -149,11 +153,14 @@ if __name__ == '__main__':
 
         script_path = '/tmp/test_oosheet.py'
         script = open(script_path, 'w')
-        for line in open(__file__):
-            if not line.startswith('execfile'):
-                script.write(line)
-            else:
+        lines = open(__file__).readlines()
+        while len(lines) > 0:
+            line = lines.pop(0)
+            if line.startswith('### BLOCK BELOW'):
                 script.write(open(tests_file).read())
+                lines = lines[4:]
+            else:
+                script.write(line)
         script.close()
 
         OOPacker(testsheet, script_path).pack()

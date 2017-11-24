@@ -348,12 +348,12 @@ class OOSheet(OODoc):
                                                    self.end_row))
 
 
-    def __cmp__(self, peer):
-        return (cmp(self.sheet.Name, peer.sheet.Name) or
-                cmp(self.start_row, peer.start_row) or
-                cmp(self.start_col, peer.start_col) or
-                cmp(self.end_row, peer.end_row) or
-                cmp(self.end_col, peer.end_col))
+    def __eq__(self, peer):
+        return ((self.sheet.Name == peer.sheet.Name) and
+                (self.start_row == peer.start_row) and
+                (self.start_col == peer.start_col) and
+                (self.end_row == peer.end_row) and
+                (self.end_col == peer.end_col))
 
 
 
@@ -681,7 +681,7 @@ class OOSheet(OODoc):
             return (self.start_col - tup.start_col, self.start_row - tup.start_row)
 
     def find(self, query):
-        if isinstance(query, str) or isinstance(query, unicode):
+        if isinstance(query, str):
             test = lambda cell: cell.string == query
         elif isinstance(query, int) or isinstance(query, float):
             test = lambda cell: cell.value == query
@@ -968,6 +968,9 @@ class OOPacker():
         doc.extractall(path=self.tmp)
 
     def open(self, path, mode='r'):
+        fullpath = os.path.join(self.tmp, path)
+        if not os.path.exists(fullpath):
+            os.makedirs(os.path.dirname(fullpath))        
         return open(os.path.join(self.tmp, path), mode)
 
     @property
@@ -1005,9 +1008,11 @@ class OOPacker():
         open(self.document + '.bak', 'wb').write(open(self.document, 'rb').read())
 
         os.remove(self.document)
-        subprocess.Popen(['zip', '-0', '-X', self.document, 'mimetype'],
+        document = os.path.realpath(self.document)
+        subprocess.Popen(['zip', '-0', '-X', document, 'mimetype'],
                          cwd=self.tmp).wait()
-        subprocess.Popen(['zip', self.document, '-r'] + os.listdir(self.tmp) + ['-x', 'mimetype'],
+
+        subprocess.Popen(['zip', document, '-r'] + os.listdir(self.tmp) + ['-x', 'mimetype'],
                          cwd=self.tmp).wait()
 
         shutil.rmtree(self.tmp)
@@ -1041,5 +1046,5 @@ def launch():
 # This is just a reminder of the complicated command needed to launch
 # LibreOffice with proper parameters to be controlled by sockets
 
-  libreoffice -calc -accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager"
+  libreoffice --calc --accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager"
 """)

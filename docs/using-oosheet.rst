@@ -14,7 +14,7 @@ No matter what your choice is, the python code is the same and works in any of t
 
 You must launch LibreOffice Spreadsheet allowing socket connections. To do so, use the following command line (in GNU/Linux)::
 
-    $ libreoffice -calc -accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager"
+    $ libreoffice --calc --accept="socket,host=localhost,port=2002;urp;StarOffice.ServiceManager"
 
 Since this command is very complicated to remember, a reminder command is included::
 
@@ -362,6 +362,8 @@ Cells protection
 
 Sheets and cells can be protected and unprotected against editions. When sheet is protected, only unprotected cells can be edited, while if sheet is unprotected, all cells can be modified no matter its protection. Sheet can be protected with a password, so that same password is required to unprotect it. 
 
+NOTE: Depending on LibreOffice version, protected cells can be edited by scripts by changing value directly.
+
 To protect and unprotect sheets and cells:
 
     >>> S('Sheet1.a1').protect_sheet()
@@ -370,4 +372,3 @@ To protect and unprotect sheets and cells:
     >>> S('Sheet1.a1').unprotect_sheet("secretpassword")
     >>> S('Sheet1.a1').protect()
     >>> S('Sheet1.a1').unprotect()
-
