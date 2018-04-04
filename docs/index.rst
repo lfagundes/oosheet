@@ -24,7 +24,7 @@ Download / Install
 
 Just type::
 
-    $ pip install oosheet
+    $ pip3 install oosheet
 
 You can get the `pip command here`_.  
 
@@ -32,9 +32,9 @@ You can get the `pip command here`_.
 
 You'll need git and python uno. If you use a Debian-based GNU/Linux distribution (like Ubuntu), you can do this with::
 
-    $ sudo aptitude install python-uno
+    $ sudo aptitude install python3-uno
 
-OOSheet was developed and tested on Python 2.6 and LibreOffice 3.3. It should work in other versions, though. If you try it in other environments, please report results to author.
+OOSheet was developed and tested on Python 3.5 and LibreOffice 5.1. It should work in other versions, though. If you try it in other environments, please report results to author.
 
 Source
 ======
