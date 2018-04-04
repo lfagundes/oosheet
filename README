@@ -1,7 +1,7 @@
 
 oosheet is a module developing OpenOffice.org Spreadsheet automated routines using Python.
 
-Documentation is available at http://oosheet.hacklab.com.br/ or else, you can build it from source like this::
+Documentation is available at http://oosheet.readthedocs.io/ or else, you can build it from source like this::
     
     $ easy_install Sphinx
     $ cd docs

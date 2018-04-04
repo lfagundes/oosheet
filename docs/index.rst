@@ -82,7 +82,7 @@ Please submit `bugs and patches <http://github.org/lfagundes/issues/>`_, prefera
 Credits
 =======
 
-OOSheet was created by Luis Fagundes and sponsored by `hacklab/ <http://hacklab.com.br/>`_.
+OOSheet was created by Luis Fagundes and was sponsored by `hacklab/ <http://hacklab.com.br/>`_ until version 1.2.
 
 `Fudge <http://farmdev.com/projects/fudge/>`_ project also take credits for a good documentation structure, on which this one was based.
 
@@ -95,6 +95,11 @@ Luc Jean sent patch that allows OOSheet to run on Windows Vista with default Pyt
 Changelog
 =========
 
+- 1.3
+
+  - Works with Python 3 and LibreOffice 5
+  - Probably better support for Windows
+	
 - 1.2.1
 
   - Move OOSheet.Quit() to OODoc.quit()
