@@ -99,6 +99,7 @@ Changelog
 
   - Works with Python 3 and LibreOffice 5
   - Probably better support for Windows
+  - Removed dynamic column constant (ex: from oosheet.colums import C)
 	
 - 1.2.1
 

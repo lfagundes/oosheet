@@ -146,14 +146,6 @@ As you see, you can access columns either by index number or string. By default,
     >>> S('a1:g10')['F'][1]
     Sheet1.F2
 
-As a convenience, the column strings can be imported as constants from oosheet.columns module, as long as uppercase letters are used:
-
-    >>> from oosheet.columns import C, F
-    >>> S('a1:g10')[C]
-    Sheet1.C1:C10
-    >>> S('a1:g10')[C:F]
-    Sheet1.C1:F10
-
 Selections can also be iterated:
 
     >>> for cell in S('Sheet1.a1:b10'):
