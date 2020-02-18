@@ -9,14 +9,16 @@ if sys.platform == 'win32':
     #Some environment variables must be modified
 
     #get the install path from registry
-    import _winreg
+    import winreg
     # try with OpenOffice, LibreOffice on W7
-    for _key in [# OpenOffice 3.3
+    for key in [# OpenOffice 3.3
                  "SOFTWARE\\OpenOffice.org\\UNO\\InstallPath",
                  # LibreOffice 3.4.5 on W7
-                 "SOFTWARE\\Wow6432Node\\LibreOffice\\UNO\\InstallPath"]:
+                 "SOFTWARE\\Wow6432Node\\LibreOffice\\UNO\\InstallPath",
+                 # LibreOffice >= 6
+                 "SOFTWARE\\LibreOffice\\UNO\\InstallPath"]:
         try:
-            value = _winreg.QueryValue(_winreg.HKEY_LOCAL_MACHINE, _key)
+            value = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE, key)
         except Exception as detail:
             _errMess = "%s" % detail
         else:
@@ -75,7 +77,7 @@ class OODoc(object):
 
     def _detect_macro_environment(self):
         for layer in inspect.stack():
-            if layer[1].startswith('vnd.sun.star.tdoc:'):
+            if layer[1].startswith('vnd.sun.star.tdoc:') or 'pythonscript.py' in layer[1]:
                 return True
         return False
 
