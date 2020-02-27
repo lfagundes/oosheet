@@ -40,10 +40,10 @@ if sys.platform == 'win32':
 import uno, re, zipfile, types, inspect, tempfile, shutil, subprocess
 from datetime import datetime, timedelta
 
-# http://codesnippets.services.openoffice.org/Office/Office.MessageBoxWithTheUNOBasedToolkit.snip
-from com.sun.star.awt import WindowDescriptor
-from com.sun.star.awt.WindowClass import MODALTOP
-from com.sun.star.awt.VclWindowPeerAttribute import OK
+# for alert()
+from com.sun.star.awt import MessageBoxButtons as MSG_BUTTONS
+from com.sun.star.awt.MessageBoxType import MESSAGEBOX
+
 
 class OODoc(object):
     """
@@ -173,22 +173,10 @@ class OODoc(object):
 
     def alert(self, msg, title = u'Alert'):
         """Opens an alert window with a message and title, and requires user to click 'Ok'"""
-        parentWin = self.model.CurrentController.Frame.ContainerWindow
-
-        aDescriptor = WindowDescriptor()
-        aDescriptor.Type = MODALTOP
-        aDescriptor.WindowServiceName = 'messbox'
-        aDescriptor.ParentIndex = -1
-        aDescriptor.Parent = parentWin
-        aDescriptor.WindowAttributes = OK
-
-        tk = parentWin.getToolkit()
-        box = tk.createWindow(aDescriptor)
-
-        box.setMessageText(msg)
-
-        if title:
-            box.setCaptionText(title)
+        ctx = self.get_context()
+        toolkit = ctx.ServiceManager.createInstanceWithContext('com.sun.star.awt.Toolkit', ctx)
+        parentWin = toolkit.getDesktopWindow()
+        box = toolkit.createMessageBox(parentWin, MESSAGEBOX, MSG_BUTTONS.BUTTONS_OK, title, str(msg))
 
         box.execute()
 
