@@ -171,15 +171,23 @@ class OODoc(object):
         self.dispatcher.executeDispatch(self.model.getCurrentController(),
                                         '.uno:%s' % cmd, '', 0, args)
 
-    def alert(self, msg, title = u'Alert'):
-        """Opens an alert window with a message and title, and requires user to click 'Ok'"""
+    def _msgBox(self, msg, title, box_type, button_type):
+        """call to uno API to display a messageBox"""
         ctx = self.get_context()
         toolkit = ctx.ServiceManager.createInstanceWithContext('com.sun.star.awt.Toolkit', ctx)
         parentWin = toolkit.getDesktopWindow()
-        box = toolkit.createMessageBox(parentWin, MESSAGEBOX, MSG_BUTTONS.BUTTONS_OK, title, str(msg))
+        box = toolkit.createMessageBox(parentWin, box_type, button_type, title, msg)
 
-        box.execute()
+        return box.execute()
 
+    def alert(self, msg, title = u'Alert'):
+        """Opens an alert window with a message and title, and requires user to click 'Ok'"""
+        self._msgBox(str(msg), title, MESSAGEBOX, MSG_BUTTONS.BUTTONS_OK)
+
+    def alertOkCancel(self, msg, title = u'Alert'):
+        """Opens an alert window and allows user to choose between ok or cancel"""
+        return self._msgBox(str(msg), title, MESSAGEBOX, MSG_BUTTONS.BUTTONS_OK_CANCEL)
+        
     def undo(self):
         """Undo the last action"""
         self.dispatch('.uno:Undo')
