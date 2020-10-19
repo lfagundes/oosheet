@@ -98,6 +98,7 @@ Changelog
 - 1.3.1
   - added OODoc.alert()
   - Works with LO >= 6
+  - adding code to access annotation for a cell or a selector via propterty: annotation (R/W)
 
 - 1.3
 
