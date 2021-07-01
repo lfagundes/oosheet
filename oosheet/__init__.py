@@ -45,6 +45,9 @@ from datetime import datetime, timedelta
 from com.sun.star.awt import MessageBoxButtons as MSG_BUTTONS
 from com.sun.star.awt.MessageBoxType import MESSAGEBOX
 
+# for append_string()
+from com.sun.star.awt.FontSlant import NONE, OBLIQUE, ITALIC
+from com.sun.star.awt.FontWeight import NORMAL, BOLD
 
 class OODoc(object):
     """
@@ -481,6 +484,15 @@ class OOSheet(OODoc):
         """The string representation of a cell. Only works for single-cell selectors"""
         assert self.cell is not None
         return self.cell.getString()
+
+    def append_string(self, text, format):
+        """ append :text to the end of the current cell string, using format.
+        Only works for single-cell selectors
+        """
+        assert self.cell is not None
+        end_text_range = self.cell.End
+        self.cell.CharPosture = format
+        self.cell.insertString(end_text_range, text, False)
 
     @string.setter
     def string(self, string):
