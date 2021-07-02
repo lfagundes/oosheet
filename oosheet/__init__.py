@@ -504,7 +504,7 @@ class OOSheet(OODoc):
             where.CharWeight = w_format
         self.cell.insertString(where, text, False)
 
-    def append_string(self, text, text_format):
+    def append_string(self, text, text_format = None):
         """ append :text to the end of the current cell string, using format.
         Only works - for the moment - for single-cell selectors
         """
@@ -512,14 +512,15 @@ class OOSheet(OODoc):
 
         s_format = None
         w_format = None
-        if text_format == Format.RESET:
-            s_format = FontSlant.NONE
-            w_format = FontWeight.NORMAL
-        else:
-            if text_format & Format.BOLD:
-                w_format = FontWeight.BOLD
-            if text_format & Format.ITALIC:
-                s_format = FontSlant.ITALIC
+        if text_format is not None:
+            if text_format == Format.RESET:
+                s_format = FontSlant.NONE
+                w_format = FontWeight.NORMAL
+            else:
+                if text_format & Format.BOLD:
+                    w_format = FontWeight.BOLD
+                if text_format & Format.ITALIC:
+                    s_format = FontSlant.ITALIC
 
         self._cellInsertString(self.cell.End, text, s_format, w_format)
 
