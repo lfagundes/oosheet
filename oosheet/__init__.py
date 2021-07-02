@@ -2,6 +2,7 @@
 
 import sys
 import os
+from enum import Flag
 from .columns import name as col_name, index as col_index
 
 if sys.platform == 'win32':
@@ -46,8 +47,18 @@ from com.sun.star.awt import MessageBoxButtons as MSG_BUTTONS
 from com.sun.star.awt.MessageBoxType import MESSAGEBOX
 
 # for append_string()
-from com.sun.star.awt.FontSlant import NONE, OBLIQUE, ITALIC
-from com.sun.star.awt.FontWeight import NORMAL, BOLD
+
+class FontSlant:
+    from com.sun.star.awt.FontSlant import NONE, ITALIC
+
+class FontWeight:
+    from com.sun.star.awt.FontWeight import NORMAL, BOLD
+
+class Format(Flag):
+    RESET = 0
+    ITALIC = 0b01
+    BOLD = 0b10
+
 
 class OODoc(object):
     """
@@ -485,14 +496,32 @@ class OOSheet(OODoc):
         assert self.cell is not None
         return self.cell.getString()
 
-    def append_string(self, text, format):
+    def _cellInsertString(self, where, text, s_format=None, w_format=None):
+        """insert text into LO cell with a specific slant of weight attribute"""
+        if s_format is not None:
+            where.CharPosture = s_format
+        if w_format is not None:
+            where.CharWeight = w_format
+        self.cell.insertString(where, text, False)
+
+    def append_string(self, text, text_format):
         """ append :text to the end of the current cell string, using format.
-        Only works for single-cell selectors
+        Only works - for the moment - for single-cell selectors
         """
         assert self.cell is not None
-        end_text_range = self.cell.End
-        self.cell.CharPosture = format
-        self.cell.insertString(end_text_range, text, False)
+
+        s_format = None
+        w_format = None
+        if text_format == Format.RESET:
+            s_format = FontSlant.NONE
+            w_format = FontWeight.NORMAL
+        else:
+            if text_format & Format.BOLD:
+                w_format = FontWeight.BOLD
+            if text_format & Format.ITALIC:
+                s_format = FontSlant.ITALIC
+
+        self._cellInsertString(self.cell.End, text, s_format, w_format)
 
     @string.setter
     def string(self, string):
