@@ -20,4 +20,7 @@ Tests assume you have your OpenOffice.org in English - USA default language.
 See also :
  * https://github.com/CosminEugenDinu/libreoffice-python-library
 
+now possible to
+ extend append_string() to muliple cells
+ add methods for color (background and fore), modify all cell at once
 
