@@ -24,3 +24,8 @@ now possible to
  * extend append_string() to muliple cells
  * add methods for color (background and fore), modify all cell at once
 
+Addendum to the doc :
+ * in case you use oosheet in python macros, please be cautious since a global var. is used (see OODoc ctor) and it could be a bug's nest ...
+ * in this case, do not hesitate to call doc.connect() at the beginnig of each macro you write :-)
+ * see the discussion in https://github.com/tudstlennkozh/oosheet/issues/1 to get details
+
