@@ -93,7 +93,8 @@ class OODoc(object):
         self.model = OODoc._model
         self.dispatcher = OODoc._dispatcher
 
-    def _detect_macro_environment(self):
+    @staticmethod
+    def _detect_macro_environment():
         for layer in inspect.stack():
             if layer[1].startswith('vnd.sun.star.tdoc:') or 'pythonscript.py' in layer[1]:
                 return True
@@ -236,7 +237,8 @@ class OODoc(object):
         """Redo the last undo"""
         self.dispatch('.uno:Redo')
 
-    def _file_url(self, filename):
+    @staticmethod
+    def _file_url(filename):
         if not filename.startswith('/'):
             filename = os.path.join(os.environ['PWD'], filename)
 
