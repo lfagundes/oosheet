@@ -46,13 +46,16 @@ from datetime import datetime, timedelta
 from com.sun.star.awt import MessageBoxButtons as MSG_BUTTONS
 from com.sun.star.awt.MessageBoxType import MESSAGEBOX
 
+
 # for append_string()
 
 class FontSlant:
     from com.sun.star.awt.FontSlant import NONE, ITALIC
 
+
 class FontWeight:
     from com.sun.star.awt.FontWeight import NORMAL, BOLD
+
 
 class Format(Flag):
     RESET = 0
@@ -291,8 +294,10 @@ class OOSheet(OODoc):
             sheet_name, cells = selector.split('.')
             self.sheet = self.model.Sheets.getByName(sheet_name)
         except ValueError:
-            self.sheet = self.model.Sheets.getByIndex(0)
+            address = self.model.CurrentSelection.RangeAddress
+            self.sheet = self.model.Sheets.getByIndex(address.Sheet)
             cells = selector
+
         cells.replace('$', '')
         cells = cells.upper()
 
