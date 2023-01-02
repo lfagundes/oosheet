@@ -141,7 +141,8 @@ class OODoc(object):
         smgr = self.context.ServiceManager
         return smgr.createInstanceWithContext("com.sun.star.frame.DispatchHelper", self.context)
 
-    def args(self, name, *args):
+    @staticmethod
+    def args(name, *args):
         """
         Receives a list of tupples and returns a list of com.sun.star.beans.PropertyValue objects corresponding to those tupples.
         This result can be passed to OODoc.dispatcher.
