@@ -2,46 +2,66 @@
 
 import sys
 import os
+from enum import Flag
 from .columns import name as col_name, index as col_index
 
 if sys.platform == 'win32':
-    #This is required in order to make pyuno usable with the default python interpreter under windows
-    #Some environment variables must be modified
+    # This is required in order to make pyuno usable with the default python interpreter under windows
+    # Some environment variables must be modified
 
-    #get the install path from registry
-    import _winreg
+    # get the install path from registry
+    import winreg
+
     # try with OpenOffice, LibreOffice on W7
-    for _key in [# OpenOffice 3.3
-                 "SOFTWARE\\OpenOffice.org\\UNO\\InstallPath",
-                 # LibreOffice 3.4.5 on W7
-                 "SOFTWARE\\Wow6432Node\\LibreOffice\\UNO\\InstallPath"]:
+    for key in [  # OpenOffice 3.3
+        "SOFTWARE\\OpenOffice.org\\UNO\\InstallPath",
+        # LibreOffice 3.4.5 on W7
+        "SOFTWARE\\Wow6432Node\\LibreOffice\\UNO\\InstallPath",
+        # LibreOffice >= 6
+        "SOFTWARE\\LibreOffice\\UNO\\InstallPath"]:
         try:
-            value = _winreg.QueryValue(_winreg.HKEY_LOCAL_MACHINE, _key)
+            value = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE, key)
         except Exception as detail:
             _errMess = "%s" % detail
         else:
-            break   # first existing key will do
-    install_folder = '\\'.join(value.split('\\')[:-1]) # 'C:\\Program Files\\OpenOffice.org 3'
+            break  # first existing key will do
+    install_folder = '\\'.join(value.split('\\')[:-1])  # 'C:\\Program Files\\OpenOffice.org 3'
 
-    #modify the environment variables
+    # modify the environment variables
     os.environ['URE_BOOTSTRAP'] = 'vnd.sun.star.pathname:{0}\\program\\fundamental.ini'.format(install_folder)
-    os.environ['UNO_PATH'] = install_folder+'\\program\\'
+    os.environ['UNO_PATH'] = install_folder + '\\program\\'
 
-    sys.path.append(install_folder+'\\Basis\\program')
-    sys.path.append(install_folder+'\\program')
+    sys.path.append(install_folder + '\\Basis\\program')
+    sys.path.append(install_folder + '\\program')
 
     paths = ''
     for path in ("\\URE\\bin;", "\\Basis\\program;", "'\\program;"):
         paths += install_folder + path
-    os.environ['PATH'] =  paths+ os.environ['PATH']
+    os.environ['PATH'] = paths + os.environ['PATH']
 
 import uno, re, zipfile, types, inspect, tempfile, shutil, subprocess
 from datetime import datetime, timedelta
 
-# http://codesnippets.services.openoffice.org/Office/Office.MessageBoxWithTheUNOBasedToolkit.snip
-from com.sun.star.awt import WindowDescriptor
-from com.sun.star.awt.WindowClass import MODALTOP
-from com.sun.star.awt.VclWindowPeerAttribute import OK
+# for alert()
+from com.sun.star.awt import MessageBoxButtons as MSG_BUTTONS
+from com.sun.star.awt.MessageBoxType import MESSAGEBOX
+
+
+# for append_string()
+
+class FontSlant:
+    from com.sun.star.awt.FontSlant import NONE, ITALIC
+
+
+class FontWeight:
+    from com.sun.star.awt.FontWeight import NORMAL, BOLD
+
+
+class Format(Flag):
+    RESET = 0
+    ITALIC = 0b01
+    BOLD = 0b10
+
 
 class OODoc(object):
     """
@@ -73,9 +93,10 @@ class OODoc(object):
         self.model = OODoc._model
         self.dispatcher = OODoc._dispatcher
 
-    def _detect_macro_environment(self):
+    @staticmethod
+    def _detect_macro_environment():
         for layer in inspect.stack():
-            if layer[1].startswith('vnd.sun.star.tdoc:'):
+            if layer[1].startswith('vnd.sun.star.tdoc:') or 'pythonscript.py' in layer[1]:
                 return True
         return False
 
@@ -86,8 +107,9 @@ class OODoc(object):
             return localContext
         else:
             # We have to connect by socket
-            resolver = localContext.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", localContext)
-            return resolver.resolve( "uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext" )
+            resolver = localContext.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver",
+                                                                             localContext)
+            return resolver.resolve("uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext")
 
     def get_model(self):
         """
@@ -102,7 +124,7 @@ class OODoc(object):
 
         """
         smgr = self.context.ServiceManager
-        desktop = smgr.createInstanceWithContext( "com.sun.star.frame.Desktop", self.context)
+        desktop = smgr.createInstanceWithContext("com.sun.star.frame.Desktop", self.context)
         return desktop.getCurrentComponent()
 
     def get_dispatcher(self):
@@ -118,9 +140,10 @@ class OODoc(object):
         The current environment is detected to decide to connect either via socket or directly.
         """
         smgr = self.context.ServiceManager
-        return smgr.createInstanceWithContext( "com.sun.star.frame.DispatchHelper", self.context)
+        return smgr.createInstanceWithContext("com.sun.star.frame.DispatchHelper", self.context)
 
-    def args(self, name, *args):
+    @staticmethod
+    def args(name, *args):
         """
         Receives a list of tupples and returns a list of com.sun.star.beans.PropertyValue objects corresponding to those tupples.
         This result can be passed to OODoc.dispatcher.
@@ -139,6 +162,23 @@ class OODoc(object):
             uno_struct.append(struct)
 
         return tuple(uno_struct)
+
+    def has_interface(self, name):
+        """ returns True if 'name' interface is supported by this object
+        """
+        m = self.model
+        if hasattr(m, "getSupportedServiceNames"):
+            sn = m.getSupportedServiceNames()
+            for n in sn:
+                if str(n) == name:
+                    return True
+
+        return False
+
+    def is_spreadsheet(self):
+        """ returns True if document is of type com.sun.star.sheet.SpreadsheetDocument
+        """
+        return self.has_interface("com.sun.star.sheet.SpreadsheetDocument")
 
     def dispatch(self, cmd, *args):
         """
@@ -169,26 +209,25 @@ class OODoc(object):
         self.dispatcher.executeDispatch(self.model.getCurrentController(),
                                         '.uno:%s' % cmd, '', 0, args)
 
-    def alert(self, msg, title = u'Alert'):
+    def _msgBox(self, msg, title, box_type, button_type):
+        """call to uno API to display a messageBox"""
+        ctx = self.get_context()
+        toolkit = ctx.ServiceManager.createInstanceWithContext('com.sun.star.awt.Toolkit', ctx)
+        parentWin = toolkit.getDesktopWindow()
+        box = toolkit.createMessageBox(parentWin, box_type, button_type, title, msg)
+
+        return box.execute()
+
+    def alert(self, msg, title=u'Alert'):
         """Opens an alert window with a message and title, and requires user to click 'Ok'"""
-        parentWin = self.model.CurrentController.Frame.ContainerWindow
+        self._msgBox(str(msg), title, MESSAGEBOX, MSG_BUTTONS.BUTTONS_OK)
 
-        aDescriptor = WindowDescriptor()
-        aDescriptor.Type = MODALTOP
-        aDescriptor.WindowServiceName = 'messbox'
-        aDescriptor.ParentIndex = -1
-        aDescriptor.Parent = parentWin
-        aDescriptor.WindowAttributes = OK
-
-        tk = parentWin.getToolkit()
-        box = tk.createWindow(aDescriptor)
-
-        box.setMessageText(msg)
-
-        if title:
-            box.setCaptionText(title)
-
-        box.execute()
+    def alertOkCancel(self, msg, title=u'Alert'):
+        """Opens an alert window and allows user to choose between ok or cancel
+        Use this in your code to get constants for return values :
+        from com.sun.star.awt.MessageBoxResults import CANCEL, OK
+        """
+        return self._msgBox(str(msg), title, MESSAGEBOX, MSG_BUTTONS.BUTTONS_OK_CANCEL)
 
     def undo(self):
         """Undo the last action"""
@@ -198,7 +237,8 @@ class OODoc(object):
         """Redo the last undo"""
         self.dispatch('.uno:Redo')
 
-    def _file_url(self, filename):
+    @staticmethod
+    def _file_url(filename):
         if not filename.startswith('/'):
             filename = os.path.join(os.environ['PWD'], filename)
 
@@ -222,13 +262,14 @@ class OODoc(object):
         """Closes the OpenOffice.org instance"""
         self.dispatch('Quit')
 
+
 class OOSheet(OODoc):
     """
     Interacts with an OpenOffice.org Spreadsheet instance.
     This high-level library works with a group of cells defined by a selector.
     """
 
-    def __init__(self, selector = None, _row_sliced = False):
+    def __init__(self, selector=None, _row_sliced=False):
         """
         Constructor gets a selector as parameter. Selector can be one of the following forms:
         a10
@@ -256,8 +297,10 @@ class OOSheet(OODoc):
             sheet_name, cells = selector.split('.')
             self.sheet = self.model.Sheets.getByName(sheet_name)
         except ValueError:
-            self.sheet = self.model.Sheets.getByIndex(0)
+            address = self.model.CurrentSelection.RangeAddress
+            self.sheet = self.model.Sheets.getByIndex(address.Sheet)
             cells = selector
+
         cells.replace('$', '')
         cells = cells.upper()
 
@@ -310,8 +353,8 @@ class OOSheet(OODoc):
         A generator of all cells of this selector. Each cell returned will be a
         python-uno com.sun.star.table.XCell object.
         """
-        for col in range(self.start_col, self.end_col+1):
-            for row in range(self.start_row, self.end_row+1):
+        for col in range(self.start_col, self.end_col + 1):
+            for row in range(self.start_row, self.end_row + 1):
                 yield self.sheet.getCellByPosition(col, row)
 
     def __iter__(self):
@@ -340,13 +383,12 @@ class OOSheet(OODoc):
                                                    self.end_col,
                                                    self.start_row + start,
                                                    self.start_row + stop),
-                           _row_sliced = True)
+                           _row_sliced=True)
         else:
             return OOSheet(self._generate_selector(self.start_col + start,
                                                    self.start_col + stop,
                                                    self.start_row,
                                                    self.end_row))
-
 
     def __eq__(self, peer):
         return ((self.sheet.Name == peer.sheet.Name) and
@@ -355,16 +397,14 @@ class OOSheet(OODoc):
                 (self.end_row == peer.end_row) and
                 (self.end_col == peer.end_col))
 
-
-
     @property
     def cells(self):
         """
         A generator of all cells of this selector. Each cell returned will be a
         single-cell OOSheet object
         """
-        for col in range(self.start_col, self.end_col+1):
-            for row in range(self.start_row, self.end_row+1):
+        for col in range(self.start_col, self.end_col + 1):
+            for row in range(self.start_row, self.end_row + 1):
                 yield OOSheet(self._generate_selector(col, col, row, row))
 
     @property
@@ -373,9 +413,9 @@ class OOSheet(OODoc):
         A generator of all cells of this selector. Each cell returned will be a
         single-cell OOSheet object
         """
-        for row in range(self.start_row, self.end_row+1):
+        for row in range(self.start_row, self.end_row + 1):
             yield OOSheet(self._generate_selector(self.start_col, self.end_col, row, row),
-                          _row_sliced = True)
+                          _row_sliced=True)
 
     @property
     def columns(self):
@@ -383,10 +423,8 @@ class OOSheet(OODoc):
         A generator of all cells of this selector. Each cell returned will be a
         single-cell OOSheet object
         """
-        for col in range(self.start_col, self.end_col+1):
+        for col in range(self.start_col, self.end_col + 1):
             yield OOSheet(self._generate_selector(col, col, self.start_row, self.end_row))
-
-
 
     @property
     def data_array(self):
@@ -395,7 +433,6 @@ class OOSheet(OODoc):
         Uses Uno's getDataArray().
         """
         return self.sheet.getCellRangeByName(self.selector).getDataArray()
-
 
     def __repr__(self):
         try:
@@ -467,6 +504,34 @@ class OOSheet(OODoc):
         assert self.cell is not None
         return self.cell.getString()
 
+    def _cellInsertString(self, where, text, s_format=None, w_format=None):
+        """insert text into LO cell with a specific slant of weight attribute"""
+        if s_format is not None:
+            where.CharPosture = s_format
+        if w_format is not None:
+            where.CharWeight = w_format
+        self.cell.insertString(where, text, False)
+
+    def append_string(self, text, text_format=None):
+        """ append :text to the end of the current cell string, using format.
+        Only works - for the moment - for single-cell selectors
+        """
+        assert self.cell is not None
+
+        s_format = None
+        w_format = None
+        if text_format is not None:
+            if text_format == Format.RESET:
+                s_format = FontSlant.NONE
+                w_format = FontWeight.NORMAL
+            else:
+                if text_format & Format.BOLD:
+                    w_format = FontWeight.BOLD
+                if text_format & Format.ITALIC:
+                    s_format = FontSlant.ITALIC
+
+        self._cellInsertString(self.cell.End, text, s_format, w_format)
+
     @string.setter
     def string(self, string):
         """Sets the string of all cells affected by this selector. Expects a string."""
@@ -476,6 +541,31 @@ class OOSheet(OODoc):
     def set_string(self, string):
         """Sets the string of all cells affected by this selector. Expects a string."""
         self.string = string
+        return self
+
+    @property
+    def annotation(self):
+        """The annotation associated with the cell. Only works for single-cell selectors"""
+        assert self.cell is not None
+        aCell = self.cell
+        return aCell.getAnnotation().getString()
+
+    @staticmethod
+    def _setCellAnnotation(aCell, supplier, string):
+        """private function to set annotation via UNO API"""
+        aCellAddr = aCell.CellAddress
+        supplier.insertNew(aCellAddr, string)
+
+    @annotation.setter
+    def annotation(self, string):
+        """Sets annotation associated of all cells affected by this selector. Expects a string."""
+        annotationsSupplier = self.sheet.getAnnotations()
+        for cell in self._cells:
+            self._setCellAnnotation(cell, annotationsSupplier, string)
+
+    def set_annotation(self, string):
+        """Sets the annotation of all cells affected by this selector. Expects a string."""
+        self.annotation = string
         return self
 
     @property
@@ -490,15 +580,14 @@ class OOSheet(OODoc):
         delta = date - self.basedate
         self.value = delta.days
 
-        date_format = uno.getConstantByName( "com.sun.star.util.NumberFormat.DATE" )
+        date_format = uno.getConstantByName("com.sun.star.util.NumberFormat.DATE")
         formats = self.model.getNumberFormats()
         cells = self.sheet.getCellRangeByName(self.selector)
-        #if formats.getByKey(cells).Type != date_format:
+        # if formats.getByKey(cells).Type != date_format:
         for cell in self._cells:
             if formats.getByKey(cell.NumberFormat).Type != date_format:
-                locale = uno.createUnoStruct( "com.sun.star.lang.Locale" )
-                cell.NumberFormat = formats.getStandardFormat( date_format, locale )
-
+                locale = uno.createUnoStruct("com.sun.star.lang.Locale")
+                cell.NumberFormat = formats.getStandardFormat(date_format, locale)
 
     def set_date(self, date):
         """Sets the date of all cells affected by this selector. Expects a datetime.datetime object."""
@@ -588,12 +677,15 @@ class OOSheet(OODoc):
     @property
     def first_row(self):
         return self.clone().shrink_down(self.height - 1)
+
     @property
     def last_row(self):
         return self.clone().shrink_up(self.height - 1)
+
     @property
     def first_column(self):
         return self.clone().shrink_right(self.width - 1)
+
     @property
     def last_column(self):
         return self.clone().shrink_left(self.width - 1)
@@ -700,16 +792,19 @@ class OOSheet(OODoc):
         for cell in self.cells:
             function(cell)
 
-    def shift_right(self, num = 1):
+    def shift_right(self, num=1):
         """Moves the selector to right, but number of columns given by "num" parameter."""
         return self.shift(num, 0)
-    def shift_left(self, num = 1):
+
+    def shift_left(self, num=1):
         """Moves the selector to left, but number of columns given by "num" parameter."""
         return self.shift(-num, 0)
-    def shift_down(self, num = 1):
+
+    def shift_down(self, num=1):
         """Moves the selector down, but number of rows given by "num" parameter."""
         return self.shift(0, num)
-    def shift_up(self, num = 1):
+
+    def shift_up(self, num=1):
         """Moves the selector up, but number of rows given by "num" parameter."""
         return self.shift(0, -num)
 
@@ -798,12 +893,15 @@ class OOSheet(OODoc):
     def shift_right_until(self, *args, **kwargs):
         """Moves selector to right until condition is matched. See shift_until()"""
         return self.shift_until(1, 0, *args, **kwargs)
+
     def shift_left_until(self, *args, **kwargs):
         """Moves selector to left until condition is matched. See shift_until()"""
         return self.shift_until(-1, 0, *args, **kwargs)
+
     def shift_down_until(self, *args, **kwargs):
         """Moves selector down until condition is matched. See shift_until()"""
         return self.shift_until(0, 1, *args, **kwargs)
+
     def shift_up_until(self, *args, **kwargs):
         """Moves selector up until condition is matched. See shift_until()"""
         return self.shift_until(0, -1, *args, **kwargs)
@@ -824,16 +922,19 @@ class OOSheet(OODoc):
 
         return self
 
-    def grow_right(self, num = 1):
+    def grow_right(self, num=1):
         """Add columns to right of selector"""
         return self.grow(num, 0)
-    def grow_left(self, num = 1):
+
+    def grow_left(self, num=1):
         """Add columns to left of selector"""
         return self.grow(-num, 0)
-    def grow_up(self, num = 1):
+
+    def grow_up(self, num=1):
         """Add rows before selector"""
         return self.grow(0, -num)
-    def grow_down(self, num = 1):
+
+    def grow_down(self, num=1):
         """Add rows after selector"""
         return self.grow(0, num)
 
@@ -852,12 +953,15 @@ class OOSheet(OODoc):
     def grow_right_until(self, *args, **kwargs):
         """Expands selection to right until condition is matched. Conditions are same as shift_until()"""
         return self.grow_until(1, 0, *args, **kwargs)
+
     def grow_left_until(self, *args, **kwargs):
         """Expands selection to left until condition is matched. Conditions are same as shift_until()"""
         return self.grow_until(-1, 0, *args, **kwargs)
+
     def grow_down_until(self, *args, **kwargs):
         """Expands selection down until condition is matched. Conditions are same as shift_until()"""
         return self.grow_until(0, 1, *args, **kwargs)
+
     def grow_up_until(self, *args, **kwargs):
         """Expands selection up until condition is matched. Conditions are same as shift_until()"""
         return self.grow_until(0, -1, *args, **kwargs)
@@ -878,16 +982,19 @@ class OOSheet(OODoc):
 
         return self
 
-    def shrink_right(self, num = 1):
+    def shrink_right(self, num=1):
         """Removes columns from right of selector. Does not afect data, only the selector."""
         return self.shrink(num, 0)
-    def shrink_left(self, num = 1):
+
+    def shrink_left(self, num=1):
         """Removes columns from left of selector. Does not afect data, only the selector."""
         return self.shrink(-num, 0)
-    def shrink_up(self, num = 1):
+
+    def shrink_up(self, num=1):
         """Removes rows from top of selector. Does not afect data, only the selector."""
         return self.shrink(0, -num)
-    def shrink_down(self, num = 1):
+
+    def shrink_down(self, num=1):
         """Removes rows from bottom of selector. Does not afect data, only the selector."""
         return self.shrink(0, num)
 
@@ -895,14 +1002,17 @@ class OOSheet(OODoc):
         """Reduces selection on right border until condition is matched. Conditions are same as shift_until()"""
         self.end_col = self.last_column.shift_left_until(*args, **kwargs).end_col
         return self
+
     def shrink_left_until(self, *args, **kwargs):
         """Reduces selection on left border until condition is matched. Conditions are same as shift_until()"""
         self.start_col = self.first_column.shift_right_until(*args, **kwargs).start_col
         return self
+
     def shrink_down_until(self, *args, **kwargs):
         """Reduces selection on bottom border until condition is matched. Conditions are same as shift_until()"""
         self.end_row = self.last_row.shift_up_until(*args, **kwargs).end_row
         return self
+
     def shrink_up_until(self, *args, **kwargs):
         """Reduces selection on top border until condition is matched. Conditions are same as shift_until()"""
         self.start_row = self.first_row.shift_down_until(*args, **kwargs).start_row
@@ -915,7 +1025,7 @@ class OOSheet(OODoc):
         """
         return OOSheet(self.selector)
 
-    def protect_sheet(self, password = ""):
+    def protect_sheet(self, password=""):
         """
         Protects selection's sheet against editions. When sheet is protected, only unprotected
         cells can be modified.
@@ -924,7 +1034,7 @@ class OOSheet(OODoc):
         self.sheet.protect(password)
         return self
 
-    def unprotect_sheet(self, password = ""):
+    def unprotect_sheet(self, password=""):
         """
         Unprotects selection's sheet against editions. When sheet is unprotected, all cells
         can be modified.
@@ -970,7 +1080,7 @@ class OOPacker():
     def open(self, path, mode='r'):
         fullpath = os.path.join(self.tmp, path)
         if not os.path.exists(fullpath):
-            os.makedirs(os.path.dirname(fullpath))        
+            os.makedirs(os.path.dirname(fullpath))
         return open(os.path.join(self.tmp, path), mode)
 
     @property
@@ -986,7 +1096,8 @@ class OOPacker():
         manifest = []
         for line in self.open('META-INF/manifest.xml'):
             if '</manifest:manifest>' in line:
-                manifest.append(' <manifest:file-entry manifest:media-type="application/binary" manifest:full-path="%s"/>' % path)
+                manifest.append(
+                    ' <manifest:file-entry manifest:media-type="application/binary" manifest:full-path="%s"/>' % path)
             elif ('full-path="%s"' % path) in line:
                 return
 
@@ -1004,7 +1115,7 @@ class OOPacker():
         fh.write(open(self.script).read())
         fh.close()
 
-        #Backup
+        # Backup
         open(self.document + '.bak', 'wb').write(open(self.document, 'rb').read())
 
         os.remove(self.document)
@@ -1016,6 +1127,7 @@ class OOPacker():
                          cwd=self.tmp).wait()
 
         shutil.rmtree(self.tmp)
+
 
 def pack():
     """Command line to pack the script in a document. Acessed as "oosheet-pack"."""
@@ -1035,11 +1147,13 @@ def pack():
 
     OOPacker(document, script).pack()
 
+
 def print_help():
     """Prints help message for pack()"""
     script_name = sys.argv[0].split('/')[-1]
     print("Usage: %s document script.py" % script_name)
     sys.exit(1)
+
 
 def launch():
     print("""
